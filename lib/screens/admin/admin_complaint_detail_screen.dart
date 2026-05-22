@@ -10,6 +10,7 @@ import '../../providers/complaint_provider.dart';
 import '../../widgets/custom_button.dart';
 import '../../widgets/custom_text_field.dart';
 import '../user/complaint_detail_screen.dart';
+import '../common/chat_screen.dart';
 
 class AdminComplaintDetailScreen extends StatefulWidget {
   final ComplaintModel complaint;
@@ -86,6 +87,13 @@ class _AdminComplaintDetailScreenState extends State<AdminComplaintDetailScreen>
         ),
         title: const Text('Admin Review'),
         actions: [
+          IconButton(
+            icon: const Icon(Icons.forum_outlined, color: AppColors.primary),
+            onPressed: () => Navigator.push(
+              context,
+              MaterialPageRoute(builder: (_) => ChatScreen(complaint: widget.complaint)),
+            ),
+          ),
           IconButton(
             icon: const Icon(Icons.done_all, color: AppColors.primary),
             onPressed: _handleUpdate,

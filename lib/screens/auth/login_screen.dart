@@ -46,6 +46,15 @@ class _LoginScreenState extends State<LoginScreen> {
     }
   }
 
+  Future<void> _handleGoogleSignIn() async {
+    final authProvider = Provider.of<AuthProvider>(context, listen: false);
+    final success = await authProvider.signInWithGoogle();
+
+    if (success && mounted) {
+      Navigator.pushReplacementNamed(context, AppRoutes.userHome);
+    }
+  }
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -177,7 +186,7 @@ class _LoginScreenState extends State<LoginScreen> {
                       text: AppStrings.continueWithSSO,
                       isOutlined: true,
                       icon: Icons.shield_outlined,
-                      onPressed: () {},
+                      onPressed: _handleGoogleSignIn,
                     ),
                     const SizedBox(height: 24),
 

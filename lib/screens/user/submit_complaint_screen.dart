@@ -1,3 +1,4 @@
+import 'dart:io';
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import 'package:uuid/uuid.dart';
@@ -26,6 +27,7 @@ class _SubmitComplaintScreenState extends State<SubmitComplaintScreen> {
   final _descriptionController = TextEditingController();
   String? _selectedCategory;
   bool _isLoading = false;
+  List<File> _selectedFiles = [];
 
   @override
   void dispose() {
@@ -61,7 +63,7 @@ class _SubmitComplaintScreenState extends State<SubmitComplaintScreen> {
         ],
       );
 
-      await complaintProvider.submitComplaint(newComplaint);
+      await complaintProvider.submitComplaint(newComplaint, images: _selectedFiles);
       
       if (mounted) {
         setState(() => _isLoading = false);
@@ -165,7 +167,9 @@ class _SubmitComplaintScreenState extends State<SubmitComplaintScreen> {
                     // File Picker
                     Text(AppStrings.supportingDocuments, style: AppStyles.labelLarge),
                     const SizedBox(height: 12),
-                    ImagePickerWidget(onImagesSelected: (images) {}),
+                    ImagePickerWidget(onImagesSelected: (images) {
+                      setState(() => _selectedFiles = images);
+                    }),
                     const SizedBox(height: 8),
                     Text(AppStrings.maxFiles, style: AppStyles.caption),
                   ],

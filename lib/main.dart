@@ -8,12 +8,19 @@ import 'core/routes/app_routes.dart';
 import 'providers/auth_provider.dart';
 import 'providers/complaint_provider.dart';
 import 'providers/notification_provider.dart';
+import 'services/notification_service.dart';
+import 'package:firebase_messaging/firebase_messaging.dart';
 
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
   await Firebase.initializeApp(
     options: DefaultFirebaseOptions.currentPlatform,
   );
+  
+  // Initialize Notifications
+  await NotificationService.instance.initialize();
+  FirebaseMessaging.onBackgroundMessage(firebaseMessagingBackgroundHandler);
+
   runApp(const ComplaintApp());
 }
 

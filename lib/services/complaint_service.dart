@@ -1,4 +1,8 @@
+import 'dart:io';
+import 'package:firebase_storage/firebase_storage.dart';
+import 'package:cloud_firestore/cloud_firestore.dart';
 import '../models/complaint_model.dart';
+import '../models/message_model.dart';
 import '../core/utils/helpers.dart';
 
 class ComplaintService {
@@ -94,10 +98,41 @@ class ComplaintService {
     ).map((list) => list..sort((a, b) => b.createdAt.compareTo(a.createdAt)));
   }
 
-  Future<void> submitComplaint(ComplaintModel complaint) async {
+  Future<void> submitComplaint(ComplaintModel complaint, {List<File>? images}) async {
+    List<String> imageUrls = [];
+    
+    if (images != null && images.isNotEmpty) {
+      for (var image in images) {
+        String? url = await uploadImage(image);
+        if (url != null) imageUrls.add(url);
+      }
+    }
+
+    final updatedComplaint = complaint.copyWith(attachments: imageUrls);
+    
     // Simulate upload delay
-    await Future.delayed(const Duration(seconds: 2));
-    _mockComplaints.add(complaint);
+    await Future.delayed(const Duration(seconds: 1));
+    _mockComplaints.add(updatedComplaint);
+  }
+
+  Future<String?> uploadImage(File file) async {
+    try {
+      final fileName = '${DateTime.now().millisecondsSinceEpoch}_${file.path.split('/').last}';
+      final ref = FirebaseStorage.instance.ref().child('complaints').child(fileName);
+      
+      final uploadTask = await ref.putFile(file);
+      final downloadUrl = await uploadTask.ref.getDownloadURL();
+      
+      return downloadUrl;
+    } catch (e) {
+      log('Error uploading image: $e');
+      return null;
+    }
+  }
+
+  // Add dummy log import if needed or use dart:developer
+  void log(String message) {
+    print(message);
   }
 
   Future<void> updateComplaintStatus(String id, String status, String note) async {
@@ -129,5 +164,27 @@ class ComplaintService {
         updatedAt: DateTime.now(),
       );
     }
+  }
+
+  // ── Chat Logic ──────────────────────────────────────────────────
+
+  Stream<List<MessageModel>> getMessages(String complaintId) {
+    return FirebaseFirestore.instance
+        .collection('complaints')
+        .doc(complaintId)
+        .collection('messages')
+        .orderBy('timestamp', descending: false)
+        .snapshots()
+        .map((snapshot) {
+      return snapshot.docs.map((doc) => MessageModel.fromJson(doc.data(), id: doc.id)).toList();
+    });
+  }
+
+  Future<void> sendMessage(String complaintId, MessageModel message) async {
+    await FirebaseFirestore.instance
+        .collection('complaints')
+        .doc(complaintId)
+        .collection('messages')
+        .add(message.toJson());
   }
 }

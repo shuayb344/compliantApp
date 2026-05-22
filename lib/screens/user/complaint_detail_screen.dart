@@ -5,6 +5,7 @@ import '../../core/constants/app_styles.dart';
 import '../../core/utils/helpers.dart';
 import '../../models/complaint_model.dart';
 import '../../widgets/status_timeline.dart';
+import '../common/chat_screen.dart';
 
 class ComplaintDetailScreen extends StatelessWidget {
   final ComplaintModel complaint;
@@ -33,7 +34,10 @@ class ComplaintDetailScreen extends StatelessWidget {
           ),
           IconButton(
             icon: const Icon(Icons.forum_outlined, color: AppColors.primary),
-            onPressed: () {},
+            onPressed: () => Navigator.push(
+              context,
+              MaterialPageRoute(builder: (_) => ChatScreen(complaint: complaint)),
+            ),
           ),
         ],
       ),
@@ -81,19 +85,29 @@ class ComplaintDetailScreen extends StatelessWidget {
               ),
             ),
 
-            // Image (Placeholder for now)
-            Container(
-              margin: const EdgeInsets.symmetric(horizontal: 24),
-              width: double.infinity,
-              height: 200,
-              decoration: BoxDecoration(
-                borderRadius: BorderRadius.circular(16),
-                image: const DecorationImage(
-                  image: NetworkImage('https://images.unsplash.com/photo-1584467541268-b040f83be3fd?q=80&w=2070&auto=format&fit=crop'),
-                  fit: BoxFit.cover,
+            // Attachments
+            if (complaint.attachments.isNotEmpty)
+              Container(
+                height: 200,
+                padding: const EdgeInsets.symmetric(horizontal: 24),
+                child: ListView.builder(
+                  scrollDirection: Axis.horizontal,
+                  itemCount: complaint.attachments.length,
+                  itemBuilder: (context, index) {
+                    return Container(
+                      width: 280,
+                      margin: const EdgeInsets.only(right: 16),
+                      decoration: BoxDecoration(
+                        borderRadius: BorderRadius.circular(16),
+                        image: DecorationImage(
+                          image: NetworkImage(complaint.attachments[index]),
+                          fit: BoxFit.cover,
+                        ),
+                      ),
+                    );
+                  },
                 ),
               ),
-            ),
             const SizedBox(height: 24),
 
             // Description Card

@@ -9,6 +9,8 @@ import '../../screens/user/profile_screen.dart';
 import '../../screens/admin/admin_dashboard_screen.dart';
 import '../../screens/admin/admin_complaint_detail_screen.dart';
 import '../../screens/admin/admin_notification_screen.dart';
+import '../../screens/admin/admin_analytics_screen.dart';
+import '../../screens/user/complaints_history_screen.dart';
 import '../../models/complaint_model.dart';
 
 class AppRoutes {
@@ -24,6 +26,8 @@ class AppRoutes {
   static const String adminDashboard = '/admin/dashboard';
   static const String adminComplaintDetail = '/admin/complaint-detail';
   static const String adminNotifications = '/admin/notifications';
+  static const String adminAnalytics = '/admin/analytics';
+  static const String userComplaints = '/user/complaints-history';
 
   static Route<dynamic> onGenerateRoute(RouteSettings settings) {
     switch (settings.name) {
@@ -55,6 +59,10 @@ class AppRoutes {
         );
       case adminNotifications:
         return _buildRoute(const AdminNotificationScreen(), settings);
+      case adminAnalytics:
+        return _buildRoute(const AdminAnalyticsScreen(), settings);
+      case userComplaints:
+        return _buildRoute(const ComplaintsHistoryScreen(), settings);
       default:
         return _buildRoute(const LoginScreen(), settings);
     }

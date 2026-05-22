@@ -172,7 +172,7 @@ class _UserHomeScreenState extends State<UserHomeScreen> {
               children: [
                 Text(AppStrings.recentComplaints, style: AppStyles.heading3),
                 TextButton(
-                  onPressed: () {},
+                  onPressed: () => Navigator.pushNamed(context, AppRoutes.userComplaints),
                   child: const Text(AppStrings.seeAll, style: TextStyle(color: AppColors.textSecondary)),
                 ),
               ],

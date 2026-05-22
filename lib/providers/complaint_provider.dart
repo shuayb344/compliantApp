@@ -1,3 +1,4 @@
+import 'dart:io';
 import 'package:flutter/material.dart';
 import '../models/complaint_model.dart';
 import '../services/complaint_service.dart';
@@ -48,8 +49,8 @@ class ComplaintProvider extends ChangeNotifier {
     notifyListeners();
   }
 
-  Future<void> submitComplaint(ComplaintModel complaint) async {
-    await _complaintService.submitComplaint(complaint);
+  Future<void> submitComplaint(ComplaintModel complaint, {List<File>? images}) async {
+    await _complaintService.submitComplaint(complaint, images: images);
     // Stream will auto-update if real Firestore is used
   }
 

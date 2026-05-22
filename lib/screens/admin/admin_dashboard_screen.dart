@@ -72,6 +72,10 @@ class _AdminDashboardScreenState extends State<AdminDashboardScreen> {
         ),
         actions: [
           IconButton(
+            icon: const Icon(Icons.bar_chart_outlined, color: AppColors.primary),
+            onPressed: () => Navigator.pushNamed(context, AppRoutes.adminAnalytics),
+          ),
+          IconButton(
             icon: const Icon(Icons.settings_outlined, color: AppColors.primary),
             onPressed: () {},
           ),

@@ -1,5 +1,6 @@
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
+import 'package:google_sign_in/google_sign_in.dart';
 import '../models/user_model.dart';
 
 class AuthService {
@@ -43,6 +44,29 @@ class AuthService {
         name: name,
         email: email,
         role: role,
+        createdAt: DateTime.now(),
+        updatedAt: DateTime.now(),
+      );
+    } catch (e) {
+      rethrow;
+    }
+  }
+
+  Future<UserModel?> signInWithGoogle() async {
+    try {
+      final GoogleSignIn googleSignIn = GoogleSignIn();
+      final GoogleSignInAccount? googleUser = await googleSignIn.signIn();
+      
+      if (googleUser == null) return null;
+
+      // Mocking the Firebase Auth link for now
+      await Future.delayed(const Duration(seconds: 1));
+
+      return UserModel(
+        uid: googleUser.id,
+        name: googleUser.displayName ?? 'Google User',
+        email: googleUser.email,
+        role: 'user',
         createdAt: DateTime.now(),
         updatedAt: DateTime.now(),
       );

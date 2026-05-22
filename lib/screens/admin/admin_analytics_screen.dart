@@ -115,7 +115,7 @@ class AdminAnalyticsScreen extends StatelessWidget {
                 getTitlesWidget: (value, meta) {
                   const titles = ['Pending', 'Progress', 'Resolved'];
                   return Padding(
-                    padding: const EdgeInsets.top(8.0),
+                    padding: const EdgeInsets.only(top: 8.0),
                     child: Text(titles[value.toInt()], style: AppStyles.caption),
                   );
                 },

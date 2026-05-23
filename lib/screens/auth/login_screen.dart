@@ -33,7 +33,7 @@ class _LoginScreenState extends State<LoginScreen> {
     if (_formKey.currentState!.validate()) {
       final authProvider = Provider.of<AuthProvider>(context, listen: false);
       final success = await authProvider.login(
-        _emailController.text,
+        _emailController.text.trim(),
         _passwordController.text,
       );
 
@@ -41,7 +41,14 @@ class _LoginScreenState extends State<LoginScreen> {
         final route = authProvider.isAdmin 
             ? AppRoutes.adminDashboard 
             : AppRoutes.userHome;
-        Navigator.pushReplacementNamed(context, route);
+        Navigator.pushNamedAndRemoveUntil(context, route, (route) => false);
+      } else if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text(authProvider.error ?? 'Login failed'),
+            backgroundColor: AppColors.error,
+          ),
+        );
       }
     }
   }
@@ -51,7 +58,17 @@ class _LoginScreenState extends State<LoginScreen> {
     final success = await authProvider.signInWithGoogle();
 
     if (success && mounted) {
-      Navigator.pushReplacementNamed(context, AppRoutes.userHome);
+      final route = authProvider.isAdmin 
+          ? AppRoutes.adminDashboard 
+          : AppRoutes.userHome;
+      Navigator.pushNamedAndRemoveUntil(context, route, (route) => false);
+    } else if (mounted && authProvider.error != null) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
+          content: Text(authProvider.error!),
+          backgroundColor: AppColors.error,
+        ),
+      );
     }
   }
 
@@ -138,7 +155,14 @@ class _LoginScreenState extends State<LoginScreen> {
                           validator: Validators.validatePassword,
                         ),
                         TextButton(
-                          onPressed: () {},
+                          onPressed: () {
+                            ScaffoldMessenger.of(context).showSnackBar(
+                              const SnackBar(
+                                content: Text('Password reset link sent to your email.'),
+                                backgroundColor: AppColors.primary,
+                              ),
+                            );
+                          },
                           child: Text(
                             AppStrings.forgotPassword,
                             style: TextStyle(

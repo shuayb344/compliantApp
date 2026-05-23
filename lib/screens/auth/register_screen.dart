@@ -32,18 +32,42 @@ class _RegisterScreenState extends State<RegisterScreen> {
     super.dispose();
   }
 
+  String _selectedRole = 'user';
+  bool _isLoading = false;
+
   Future<void> _handleRegister() async {
-    if (_formKey.currentState!.validate()) {
+    if (!_formKey.currentState!.validate()) return;
+
+    setState(() => _isLoading = true);
+    
+    try {
       final authProvider = Provider.of<AuthProvider>(context, listen: false);
-      final success = await authProvider.register(
-        _nameController.text,
-        _emailController.text,
+      final error = await authProvider.register(
+        _nameController.text.trim(),
+        _emailController.text.trim(),
         _passwordController.text,
-        'user',
+        _selectedRole,
       );
 
-      if (success && mounted) {
-        Navigator.pushReplacementNamed(context, AppRoutes.userHome);
+      if (mounted) {
+        setState(() => _isLoading = false);
+        if (error != null) {
+          ScaffoldMessenger.of(context).showSnackBar(
+            SnackBar(content: Text(error), backgroundColor: AppColors.error),
+          );
+        } else {
+          ScaffoldMessenger.of(context).showSnackBar(
+            const SnackBar(content: Text('Account created successfully!'), backgroundColor: AppColors.success),
+          );
+          // Redirection is usually handled by AuthWrapper or the caller
+        }
+      }
+    } catch (e) {
+      if (mounted) {
+        setState(() => _isLoading = false);
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(content: Text('Registration failed'), backgroundColor: AppColors.error),
+        );
       }
     }
   }
@@ -105,6 +129,27 @@ class _RegisterScreenState extends State<RegisterScreen> {
                   isPassword: true,
                   prefixIcon: const Icon(Icons.lock_clock_outlined),
                   validator: (val) => Validators.validateConfirmPassword(val, _passwordController.text),
+                ),
+                const Text('Register as:', style: AppStyles.labelLarge),
+                const SizedBox(height: 12),
+                Row(
+                  children: [
+                    ChoiceChip(
+                      label: const Text('User'),
+                      selected: _selectedRole == 'user',
+                      onSelected: (selected) {
+                        if (selected) setState(() => _selectedRole = 'user');
+                      },
+                    ),
+                    const SizedBox(width: 12),
+                    ChoiceChip(
+                      label: const Text('Admin'),
+                      selected: _selectedRole == 'admin',
+                      onSelected: (selected) {
+                        if (selected) setState(() => _selectedRole = 'admin');
+                      },
+                    ),
+                  ],
                 ),
                 const SizedBox(height: 32),
 

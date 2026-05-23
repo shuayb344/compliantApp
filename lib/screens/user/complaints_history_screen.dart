@@ -30,19 +30,18 @@ class _ComplaintsHistoryScreenState extends State<ComplaintsHistoryScreen> {
   @override
   Widget build(BuildContext context) {
     final complaintProvider = Provider.of<ComplaintProvider>(context);
+    final theme = Theme.of(context);
+    final isDark = theme.brightness == Brightness.dark;
 
     return Scaffold(
-      backgroundColor: AppColors.background,
       appBar: AppBar(
-        backgroundColor: Colors.white,
-        elevation: 0,
         leading: IconButton(
-          icon: const Icon(Icons.arrow_back, color: AppColors.primary),
+          icon: Icon(Icons.arrow_back, color: theme.colorScheme.onSurface),
           onPressed: () => Navigator.pop(context),
         ),
-        title: const Text(
+        title: Text(
           'My Complaints',
-          style: TextStyle(color: AppColors.primary, fontWeight: FontWeight.bold, fontSize: 18),
+          style: TextStyle(color: theme.colorScheme.onSurface, fontWeight: FontWeight.bold, fontSize: 18),
         ),
       ),
       body: Column(
@@ -50,27 +49,28 @@ class _ComplaintsHistoryScreenState extends State<ComplaintsHistoryScreen> {
           // Filter and Search Header
           Container(
             padding: const EdgeInsets.fromLTRB(24, 12, 24, 24),
-            color: Colors.white,
+            color: theme.appBarTheme.backgroundColor,
             child: Column(
               children: [
                 SingleChildScrollView(
                   scrollDirection: Axis.horizontal,
                   child: Row(
                     children: [
-                      _buildFilterChip('All', complaintProvider.selectedCategory == 'All'),
+                      _buildFilterChip('All', complaintProvider.selectedCategory == 'All', isDark),
                       const SizedBox(width: 8),
-                      _buildFilterChip('Billing', complaintProvider.selectedCategory == 'Billing'),
+                      _buildFilterChip('Billing', complaintProvider.selectedCategory == 'Billing', isDark),
                       const SizedBox(width: 8),
-                      _buildFilterChip('Technical', complaintProvider.selectedCategory == 'Technical'),
+                      _buildFilterChip('Technical', complaintProvider.selectedCategory == 'Technical', isDark),
                       const SizedBox(width: 8),
-                      _buildFilterChip('Service', complaintProvider.selectedCategory == 'Service'),
+                      _buildFilterChip('Service', complaintProvider.selectedCategory == 'Service', isDark),
                     ],
                   ),
                 ),
                 const SizedBox(height: 16),
                 TextField(
                   onChanged: (v) => complaintProvider.setSearchQuery(v),
-                  decoration: AppStyles.inputDecoration(
+                  decoration: AppStyles.inputDecorationOf(
+                    context,
                     label: '',
                     hint: 'Search by ID or title...',
                     prefixIcon: const Icon(Icons.search),
@@ -97,9 +97,9 @@ class _ComplaintsHistoryScreenState extends State<ComplaintsHistoryScreen> {
                       children: [
                         Icon(Icons.search_off_rounded,
                             size: 64,
-                            color: AppColors.textHint.withValues(alpha: 0.5)),
+                            color: theme.colorScheme.onSurface.withValues(alpha: 0.3)),
                         const SizedBox(height: 16),
-                        Text('No matches found.', style: AppStyles.subtitle),
+                        Text('No matches found.', style: AppStyles.subtitleOf(context)),
                       ],
                     ),
                   );
@@ -136,7 +136,8 @@ class _ComplaintsHistoryScreenState extends State<ComplaintsHistoryScreen> {
     );
   }
 
-  Widget _buildFilterChip(String label, bool isSelected) {
+  Widget _buildFilterChip(String label, bool isSelected, bool isDark) {
+    final theme = Theme.of(context);
     return ChoiceChip(
       label: Text(label),
       selected: isSelected,
@@ -144,15 +145,15 @@ class _ComplaintsHistoryScreenState extends State<ComplaintsHistoryScreen> {
         if (selected) Provider.of<ComplaintProvider>(context, listen: false).setCategory(label);
       },
       selectedColor: AppColors.primary,
-      backgroundColor: Colors.white,
+      backgroundColor: theme.cardColor,
       labelStyle: TextStyle(
-        color: isSelected ? Colors.white : AppColors.textPrimary,
+        color: isSelected ? Colors.white : theme.colorScheme.onSurface,
         fontWeight: FontWeight.w600,
         fontSize: 13,
       ),
       shape: RoundedRectangleBorder(
         borderRadius: BorderRadius.circular(20),
-        side: BorderSide(color: isSelected ? AppColors.primary : AppColors.divider),
+        side: BorderSide(color: isSelected ? AppColors.primary : theme.dividerColor),
       ),
       showCheckmark: false,
     );

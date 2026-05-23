@@ -13,6 +13,7 @@ class StatusTimeline extends StatelessWidget {
     // Show most recent first
     final sortedHistory = List<StatusHistoryEntry>.from(history)
       ..sort((a, b) => b.timestamp.compareTo(a.timestamp));
+    final theme = Theme.of(context);
 
     return Column(
       children: List.generate(sortedHistory.length, (index) {
@@ -35,7 +36,7 @@ class StatusTimeline extends StatelessWidget {
                       Container(
                         width: 2,
                         height: 8,
-                        color: AppColors.divider,
+                        color: theme.dividerColor,
                       ),
                     // Dot
                     Container(
@@ -58,7 +59,7 @@ class StatusTimeline extends StatelessWidget {
                       Expanded(
                         child: Container(
                           width: 2,
-                          color: AppColors.divider,
+                          color: theme.dividerColor,
                         ),
                       ),
                   ],
@@ -85,9 +86,9 @@ class StatusTimeline extends StatelessWidget {
                           ),
                           Text(
                             Helpers.formatDateWithTime(entry.timestamp),
-                            style: const TextStyle(
+                            style: TextStyle(
                               fontSize: 12,
-                              color: AppColors.textSecondary,
+                              color: theme.colorScheme.onSurface.withValues(alpha: 0.6),
                             ),
                           ),
                         ],
@@ -95,9 +96,9 @@ class StatusTimeline extends StatelessWidget {
                       const SizedBox(height: 4),
                       Text(
                         entry.note,
-                        style: const TextStyle(
+                        style: TextStyle(
                           fontSize: 13,
-                          color: AppColors.textSecondary,
+                          color: theme.colorScheme.onSurface.withValues(alpha: 0.6),
                           height: 1.4,
                         ),
                       ),

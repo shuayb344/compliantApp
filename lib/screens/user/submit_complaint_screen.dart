@@ -96,18 +96,17 @@ class _SubmitComplaintScreenState extends State<SubmitComplaintScreen> {
 
   @override
   Widget build(BuildContext context) {
+    final theme = Theme.of(context);
+
     return Scaffold(
-      backgroundColor: AppColors.background,
       appBar: AppBar(
-        backgroundColor: Colors.white,
-        elevation: 0,
         leading: IconButton(
-          icon: const Icon(Icons.arrow_back, color: AppColors.primary),
+          icon: Icon(Icons.arrow_back, color: theme.colorScheme.onSurface),
           onPressed: () => Navigator.pop(context),
         ),
-        title: const Text(
+        title: Text(
           AppStrings.submitNewComplaint,
-          style: TextStyle(color: AppColors.primary, fontWeight: FontWeight.bold, fontSize: 18),
+          style: TextStyle(color: theme.colorScheme.onSurface, fontWeight: FontWeight.bold, fontSize: 18),
         ),
       ),
       body: SingleChildScrollView(
@@ -117,13 +116,13 @@ class _SubmitComplaintScreenState extends State<SubmitComplaintScreen> {
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              Text(AppStrings.tellUsWhatHappened, style: AppStyles.heading2),
+              Text(AppStrings.tellUsWhatHappened, style: AppStyles.heading2Of(context)),
               const SizedBox(height: 8),
-              Text(AppStrings.submitDetailSubtitle, style: AppStyles.bodySmall),
+              Text(AppStrings.submitDetailSubtitle, style: AppStyles.bodySmallOf(context)),
               const SizedBox(height: 32),
 
               // Category Selection
-              const Text(AppStrings.category, style: AppStyles.labelLarge),
+              Text(AppStrings.category, style: AppStyles.labelLargeOf(context)),
               const SizedBox(height: 12),
               _buildCategorySelector(),
               const SizedBox(height: 24),
@@ -148,7 +147,7 @@ class _SubmitComplaintScreenState extends State<SubmitComplaintScreen> {
               const SizedBox(height: 24),
 
               // Image Picker
-              const Text(AppStrings.attachImages, style: AppStyles.labelLarge),
+              Text(AppStrings.attachImages, style: AppStyles.labelLargeOf(context)),
               const SizedBox(height: 12),
               ImagePickerWidget(
                 onImagesSelected: (images) => setState(() => _selectedImages = images),
@@ -171,6 +170,7 @@ class _SubmitComplaintScreenState extends State<SubmitComplaintScreen> {
   }
 
   Widget _buildCategorySelector() {
+    final theme = Theme.of(context);
     final categories = ['Billing', 'Technical', 'Service', 'Infrastructure'];
     return Wrap(
       spacing: 8,
@@ -184,13 +184,13 @@ class _SubmitComplaintScreenState extends State<SubmitComplaintScreen> {
           },
           selectedColor: AppColors.primary,
           labelStyle: TextStyle(
-            color: isSelected ? Colors.white : AppColors.textPrimary,
+            color: isSelected ? Colors.white : theme.colorScheme.onSurface,
             fontWeight: FontWeight.w600,
           ),
           showCheckmark: false,
           shape: RoundedRectangleBorder(
             borderRadius: BorderRadius.circular(20),
-            side: BorderSide(color: isSelected ? AppColors.primary : AppColors.divider),
+            side: BorderSide(color: isSelected ? AppColors.primary : theme.dividerColor),
           ),
         );
       }).toList(),

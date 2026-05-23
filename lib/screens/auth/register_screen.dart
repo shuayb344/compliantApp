@@ -73,13 +73,14 @@ class _RegisterScreenState extends State<RegisterScreen> {
 
   @override
   Widget build(BuildContext context) {
+    final theme = Theme.of(context);
+
     return Scaffold(
-      backgroundColor: AppColors.background,
       appBar: AppBar(
         backgroundColor: Colors.transparent,
         elevation: 0,
         leading: IconButton(
-          icon: const Icon(Icons.arrow_back, color: AppColors.primary),
+          icon: Icon(Icons.arrow_back, color: theme.colorScheme.onSurface),
           onPressed: () => Navigator.pop(context),
         ),
       ),
@@ -91,15 +92,15 @@ class _RegisterScreenState extends State<RegisterScreen> {
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                Text('Create Account', style: AppStyles.heading1),
+                Text('Create Account', style: AppStyles.heading1Of(context)),
                 const SizedBox(height: 8),
-                Text('Join our portal to manage your feedback', style: AppStyles.subtitle),
+                Text('Join our portal to manage your feedback', style: AppStyles.subtitleOf(context)),
                 const SizedBox(height: 40),
 
                 CustomTextField(
                   label: AppStrings.fullName,
                   controller: _nameController,
-                  prefixIcon: const Icon(Icons.person_outline),
+                  prefixIcon: Icon(Icons.person_outline, color: theme.colorScheme.onSurface.withValues(alpha: 0.6)),
                   validator: Validators.validateName,
                 ),
                 const SizedBox(height: 20),
@@ -108,7 +109,7 @@ class _RegisterScreenState extends State<RegisterScreen> {
                   label: AppStrings.email,
                   controller: _emailController,
                   keyboardType: TextInputType.emailAddress,
-                  prefixIcon: const Icon(Icons.mail_outline),
+                  prefixIcon: Icon(Icons.mail_outline, color: theme.colorScheme.onSurface.withValues(alpha: 0.6)),
                   validator: Validators.validateEmail,
                 ),
                 const SizedBox(height: 20),
@@ -117,7 +118,7 @@ class _RegisterScreenState extends State<RegisterScreen> {
                   label: AppStrings.password,
                   controller: _passwordController,
                   isPassword: true,
-                  prefixIcon: const Icon(Icons.lock_outline),
+                  prefixIcon: Icon(Icons.lock_outline, color: theme.colorScheme.onSurface.withValues(alpha: 0.6)),
                   validator: Validators.validatePassword,
                 ),
                 const SizedBox(height: 20),
@@ -126,10 +127,11 @@ class _RegisterScreenState extends State<RegisterScreen> {
                   label: AppStrings.confirmPassword,
                   controller: _confirmController,
                   isPassword: true,
-                  prefixIcon: const Icon(Icons.lock_clock_outlined),
+                  prefixIcon: Icon(Icons.lock_clock_outlined, color: theme.colorScheme.onSurface.withValues(alpha: 0.6)),
                   validator: (val) => Validators.validateConfirmPassword(val, _passwordController.text),
                 ),
-                const Text('Register as:', style: AppStyles.labelLarge),
+                const SizedBox(height: 20),
+                Text('Register as:', style: AppStyles.labelLargeOf(context)),
                 const SizedBox(height: 12),
                 Row(
                   children: [
@@ -139,6 +141,10 @@ class _RegisterScreenState extends State<RegisterScreen> {
                       onSelected: (selected) {
                         if (selected) setState(() => _selectedRole = 'user');
                       },
+                      selectedColor: theme.colorScheme.primary,
+                      labelStyle: TextStyle(
+                        color: _selectedRole == 'user' ? Colors.white : theme.colorScheme.onSurface,
+                      ),
                     ),
                     const SizedBox(width: 12),
                     ChoiceChip(
@@ -147,6 +153,10 @@ class _RegisterScreenState extends State<RegisterScreen> {
                       onSelected: (selected) {
                         if (selected) setState(() => _selectedRole = 'admin');
                       },
+                      selectedColor: theme.colorScheme.primary,
+                      labelStyle: TextStyle(
+                        color: _selectedRole == 'admin' ? Colors.white : theme.colorScheme.onSurface,
+                      ),
                     ),
                   ],
                 ),
@@ -168,14 +178,14 @@ class _RegisterScreenState extends State<RegisterScreen> {
                   children: [
                     Text(
                       AppStrings.alreadyHaveAccount,
-                      style: AppStyles.bodySmall,
+                      style: AppStyles.bodySmallOf(context),
                     ),
                     GestureDetector(
                       onTap: () => Navigator.pop(context),
                       child: Text(
                         AppStrings.login,
                         style: TextStyle(
-                          color: AppColors.primary,
+                          color: theme.colorScheme.primary,
                           fontWeight: FontWeight.w700,
                           fontSize: 14,
                         ),

@@ -10,14 +10,13 @@ class AdminAnalyticsScreen extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final theme = Theme.of(context);
+
     return Scaffold(
-      backgroundColor: AppColors.background,
       appBar: AppBar(
-        title: const Text('Performance Analytics', style: TextStyle(color: AppColors.primary, fontWeight: FontWeight.bold)),
-        backgroundColor: Colors.white,
-        elevation: 0,
+        title: Text('Performance Analytics', style: TextStyle(color: theme.colorScheme.onSurface, fontWeight: FontWeight.bold)),
         leading: IconButton(
-          icon: const Icon(Icons.arrow_back, color: AppColors.primary),
+          icon: Icon(Icons.arrow_back, color: theme.colorScheme.onSurface),
           onPressed: () => Navigator.pop(context),
         ),
       ),
@@ -28,19 +27,19 @@ class AdminAnalyticsScreen extends StatelessWidget {
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                _buildSectionTitle('Category Distribution'),
+                _buildSectionTitle(context, 'Category Distribution'),
                 const SizedBox(height: 16),
-                _buildPieChart(provider),
+                _buildPieChart(context, provider),
                 const SizedBox(height: 40),
                 
-                _buildSectionTitle('Status Overview'),
+                _buildSectionTitle(context, 'Status Overview'),
                 const SizedBox(height: 16),
-                _buildBarChart(provider),
+                _buildBarChart(context, provider),
                 const SizedBox(height: 40),
                 
-                _buildSectionTitle('Efficiency Metrics'),
+                _buildSectionTitle(context, 'Efficiency Metrics'),
                 const SizedBox(height: 16),
-                _buildMetricsList(provider),
+                _buildMetricsList(context, provider),
                 const SizedBox(height: 40),
               ],
             ),
@@ -50,11 +49,12 @@ class AdminAnalyticsScreen extends StatelessWidget {
     );
   }
 
-  Widget _buildSectionTitle(String title) {
-    return Text(title, style: AppStyles.heading3);
+  Widget _buildSectionTitle(BuildContext context, String title) {
+    return Text(title, style: AppStyles.heading3Of(context));
   }
 
-  Widget _buildPieChart(ComplaintProvider provider) {
+  Widget _buildPieChart(BuildContext context, ComplaintProvider provider) {
+    final theme = Theme.of(context);
     final categories = ['Billing', 'Technical', 'Service', 'Infrastructure'];
     final data = categories.map((cat) {
       final count = provider.complaints.where((c) => c.category == cat).length;
@@ -69,7 +69,7 @@ class AdminAnalyticsScreen extends StatelessWidget {
 
     return Container(
       padding: const EdgeInsets.all(24),
-      decoration: AppStyles.cardDecoration,
+      decoration: AppStyles.cardDecorationOf(context),
       height: 250,
       child: Row(
         children: [
@@ -86,17 +86,17 @@ class AdminAnalyticsScreen extends StatelessWidget {
           Column(
             mainAxisAlignment: MainAxisAlignment.center,
             crossAxisAlignment: CrossAxisAlignment.start,
-            children: categories.map((cat) => _buildLegendItem(cat, _getCategoryColor(cat))).toList(),
+            children: categories.map((cat) => _buildLegendItem(context, cat, _getCategoryColor(cat))).toList(),
           ),
         ],
       ),
     );
   }
 
-  Widget _buildBarChart(ComplaintProvider provider) {
+  Widget _buildBarChart(BuildContext context, ComplaintProvider provider) {
     return Container(
       padding: const EdgeInsets.fromLTRB(16, 32, 16, 16),
-      decoration: AppStyles.cardDecoration,
+      decoration: AppStyles.cardDecorationOf(context),
       height: 250,
       child: BarChart(
         BarChartData(
@@ -116,7 +116,7 @@ class AdminAnalyticsScreen extends StatelessWidget {
                   const titles = ['Pending', 'Progress', 'Resolved'];
                   return Padding(
                     padding: const EdgeInsets.only(top: 8.0),
-                    child: Text(titles[value.toInt()], style: AppStyles.caption),
+                    child: Text(titles[value.toInt()], style: AppStyles.captionOf(context)),
                   );
                 },
               ),
@@ -146,35 +146,37 @@ class AdminAnalyticsScreen extends StatelessWidget {
     );
   }
 
-  Widget _buildLegendItem(String label, Color color) {
+  Widget _buildLegendItem(BuildContext context, String label, Color color) {
+    final theme = Theme.of(context);
     return Padding(
       padding: const EdgeInsets.symmetric(vertical: 4),
       child: Row(
         children: [
           Container(width: 12, height: 12, decoration: BoxDecoration(color: color, shape: BoxShape.circle)),
           const SizedBox(width: 8),
-          Text(label, style: const TextStyle(fontSize: 12, fontWeight: FontWeight.w500)),
+          Text(label, style: TextStyle(fontSize: 12, fontWeight: FontWeight.w500, color: theme.colorScheme.onSurface)),
         ],
       ),
     );
   }
 
-  Widget _buildMetricsList(ComplaintProvider provider) {
+  Widget _buildMetricsList(BuildContext context, ComplaintProvider provider) {
     return Column(
       children: [
-        _buildMetricTile('Avg. Resolution Time', '4.2 Days', Icons.timer_outlined, Colors.blue),
+        _buildMetricTile(context, 'Avg. Resolution Time', '4.2 Days', Icons.timer_outlined, Colors.blue),
         const SizedBox(height: 12),
-        _buildMetricTile('Satisfaction Score', '92%', Icons.star_outline, Colors.orange),
+        _buildMetricTile(context, 'Satisfaction Score', '92%', Icons.star_outline, Colors.orange),
         const SizedBox(height: 12),
-        _buildMetricTile('Total Interactions', '${provider.complaints.length * 3}', Icons.forum_outlined, Colors.green),
+        _buildMetricTile(context, 'Total Interactions', '${provider.complaints.length * 3}', Icons.forum_outlined, Colors.green),
       ],
     );
   }
 
-  Widget _buildMetricTile(String label, String value, IconData icon, Color color) {
+  Widget _buildMetricTile(BuildContext context, String label, String value, IconData icon, Color color) {
+    final theme = Theme.of(context);
     return Container(
       padding: const EdgeInsets.all(20),
-      decoration: AppStyles.cardDecoration,
+      decoration: AppStyles.cardDecorationOf(context),
       child: Row(
         children: [
           Container(
@@ -183,8 +185,8 @@ class AdminAnalyticsScreen extends StatelessWidget {
             child: Icon(icon, color: color),
           ),
           const SizedBox(width: 16),
-          Expanded(child: Text(label, style: const TextStyle(fontWeight: FontWeight.w600))),
-          Text(value, style: AppStyles.heading3),
+          Expanded(child: Text(label, style: TextStyle(fontWeight: FontWeight.w600, color: theme.colorScheme.onSurface))),
+          Text(value, style: AppStyles.heading3Of(context)),
         ],
       ),
     );

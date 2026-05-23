@@ -16,19 +16,18 @@ class ComplaintDetailScreen extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final theme = Theme.of(context);
+
     return Scaffold(
-      backgroundColor: AppColors.background,
       appBar: AppBar(
-        backgroundColor: Colors.white,
-        elevation: 0,
         leading: IconButton(
-          icon: const Icon(Icons.arrow_back, color: AppColors.primary),
+          icon: Icon(Icons.arrow_back, color: theme.colorScheme.onSurface),
           onPressed: () => Navigator.pop(context),
         ),
-        title: const Text(
+        title: Text(
           AppStrings.appName,
           style: TextStyle(
-              color: AppColors.primary,
+              color: theme.colorScheme.onSurface,
               fontWeight: FontWeight.bold,
               fontSize: 18),
         ),
@@ -53,7 +52,7 @@ class ComplaintDetailScreen extends StatelessWidget {
                       color: AppColors.error.withValues(alpha: 0.5)),
                   const SizedBox(height: 16),
                   Text('Failed to load complaint',
-                      style: AppStyles.subtitle),
+                      style: AppStyles.subtitleOf(context)),
                   const SizedBox(height: 8),
                   TextButton(
                     onPressed: () => Navigator.pop(context),
@@ -71,9 +70,9 @@ class ComplaintDetailScreen extends StatelessWidget {
                 children: [
                   Icon(Icons.search_off,
                       size: 64,
-                      color: AppColors.textHint.withValues(alpha: 0.5)),
+                      color: theme.colorScheme.onSurface.withValues(alpha: 0.3)),
                   const SizedBox(height: 16),
-                  Text('Complaint not found', style: AppStyles.subtitle),
+                  Text('Complaint not found', style: AppStyles.subtitleOf(context)),
                   const SizedBox(height: 8),
                   TextButton(
                     onPressed: () => Navigator.pop(context),
@@ -99,13 +98,13 @@ class ComplaintDetailScreen extends StatelessWidget {
               // Chat button at bottom
               Container(
                 padding: const EdgeInsets.all(16),
-                decoration: const BoxDecoration(
-                  color: Colors.white,
+                decoration: BoxDecoration(
+                  color: theme.cardColor,
                   boxShadow: [
                     BoxShadow(
-                        color: Colors.black12,
+                        color: theme.shadowColor.withValues(alpha: 0.1),
                         blurRadius: 4,
-                        offset: Offset(0, -2)),
+                        offset: const Offset(0, -2)),
                   ],
                 ),
                 child: SafeArea(
@@ -141,6 +140,9 @@ class ComplaintDetailContent extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final theme = Theme.of(context);
+    final isDark = theme.brightness == Brightness.dark;
+
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
@@ -173,16 +175,16 @@ class ComplaintDetailContent extends StatelessWidget {
                 ],
               ),
               const SizedBox(height: 16),
-              Text(complaint.title, style: AppStyles.heading2),
+              Text(complaint.title, style: AppStyles.heading2Of(context)),
               const SizedBox(height: 12),
               Row(
                 children: [
-                  const Icon(Icons.calendar_today_outlined,
-                      size: 16, color: AppColors.textSecondary),
+                  Icon(Icons.calendar_today_outlined,
+                      size: 16, color: theme.colorScheme.onSurface.withValues(alpha: 0.6)),
                   const SizedBox(width: 8),
                   Text(
                     '${AppStrings.submittedOn}${Helpers.formatDateFull(complaint.createdAt)}',
-                    style: AppStyles.bodySmall,
+                    style: AppStyles.bodySmallOf(context),
                   ),
                 ],
               ),
@@ -210,17 +212,15 @@ class ComplaintDetailContent extends StatelessWidget {
                     imageUrl: complaint.attachments[index],
                     fit: BoxFit.cover,
                     placeholder: (context, url) => Container(
-                      color: AppColors.surfaceLight,
+                      color: isDark ? theme.colorScheme.surfaceContainerHighest : AppColors.surfaceLight,
                       child: const Center(
                         child: CircularProgressIndicator(strokeWidth: 2),
                       ),
                     ),
                     errorWidget: (context, url, error) => Container(
-                      color: AppColors.surfaceLight,
-                      child: const Center(
-                        child: Icon(Icons.broken_image,
-                            size: 48, color: AppColors.textHint),
-                      ),
+                      color: isDark ? theme.colorScheme.surfaceContainerHighest : AppColors.surfaceLight,
+                      child: Icon(Icons.broken_image,
+                          size: 48, color: theme.colorScheme.onSurface.withValues(alpha: 0.4)),
                     ),
                   ),
                 );
@@ -234,14 +234,14 @@ class ComplaintDetailContent extends StatelessWidget {
           padding: const EdgeInsets.symmetric(horizontal: 24),
           child: Container(
             padding: const EdgeInsets.all(24),
-            decoration: AppStyles.cardDecoration,
+            decoration: AppStyles.cardDecorationOf(context),
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                const Text(AppStrings.fullDescription,
-                    style: AppStyles.caption),
+                Text(AppStrings.fullDescription,
+                    style: AppStyles.captionOf(context)),
                 const SizedBox(height: 12),
-                Text(complaint.description, style: AppStyles.body),
+                Text(complaint.description, style: AppStyles.bodyOf(context)),
               ],
             ),
           ),
@@ -253,12 +253,12 @@ class ComplaintDetailContent extends StatelessWidget {
           padding: const EdgeInsets.symmetric(horizontal: 24),
           child: Container(
             padding: const EdgeInsets.all(24),
-            decoration: AppStyles.cardDecoration,
+            decoration: AppStyles.cardDecorationOf(context),
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                const Text(AppStrings.statusHistory,
-                    style: AppStyles.caption),
+                Text(AppStrings.statusHistory,
+                    style: AppStyles.captionOf(context)),
                 const SizedBox(height: 20),
                 StatusTimeline(history: complaint.statusHistory),
               ],

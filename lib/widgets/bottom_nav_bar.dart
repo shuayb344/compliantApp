@@ -18,11 +18,14 @@ class CustomBottomNavBar extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final theme = Theme.of(context);
+    final isDark = theme.brightness == Brightness.dark;
+
     return Container(
       decoration: BoxDecoration(
         boxShadow: [
           BoxShadow(
-            color: AppColors.shadow,
+            color: theme.shadowColor.withValues(alpha: 0.1),
             blurRadius: 10,
             offset: const Offset(0, -2),
           ),
@@ -32,9 +35,9 @@ class CustomBottomNavBar extends StatelessWidget {
         currentIndex: currentIndex,
         onTap: onTap,
         type: BottomNavigationBarType.fixed,
-        backgroundColor: Colors.white,
-        selectedItemColor: AppColors.primary,
-        unselectedItemColor: AppColors.textSecondary,
+        backgroundColor: theme.cardColor,
+        selectedItemColor: theme.colorScheme.primary,
+        unselectedItemColor: theme.colorScheme.onSurface.withValues(alpha: 0.6),
         selectedLabelStyle: const TextStyle(
           fontSize: 10,
           fontWeight: FontWeight.w600,
@@ -55,8 +58,8 @@ class CustomBottomNavBar extends StatelessWidget {
             label: isAdmin ? 'Dashboard' : AppStrings.complaints,
           ),
           BottomNavigationBarItem(
-            icon: _buildNotificationIcon(),
-            activeIcon: _buildNotificationIcon(isActive: true),
+            icon: _buildNotificationIcon(context),
+            activeIcon: _buildNotificationIcon(context, isActive: true),
             label: AppStrings.alerts,
           ),
           const BottomNavigationBarItem(
@@ -69,7 +72,8 @@ class CustomBottomNavBar extends StatelessWidget {
     );
   }
 
-  Widget _buildNotificationIcon({bool isActive = false}) {
+  Widget _buildNotificationIcon(BuildContext context, {bool isActive = false}) {
+    final theme = Theme.of(context);
     return Stack(
       children: [
         Icon(isActive ? Icons.notifications : Icons.notifications_outlined),
@@ -82,7 +86,7 @@ class CustomBottomNavBar extends StatelessWidget {
               decoration: BoxDecoration(
                 color: AppColors.pending,
                 shape: BoxShape.circle,
-                border: Border.all(color: Colors.white, width: 1.5),
+                border: Border.all(color: theme.cardColor, width: 1.5),
               ),
               constraints: const BoxConstraints(
                 minWidth: 12,

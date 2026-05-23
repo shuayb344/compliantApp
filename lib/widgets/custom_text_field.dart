@@ -36,13 +36,14 @@ class CustomTextField extends StatelessWidget {
           obscureText: isPassword,
           keyboardType: keyboardType,
           maxLines: maxLines,
-          decoration: AppStyles.inputDecoration(
+          decoration: AppStyles.inputDecorationOf(
+            context,
             label: label,
             hint: hint,
             prefixIcon: prefixIcon,
             suffixIcon: suffixIcon,
           ),
-          style: AppStyles.body,
+          style: AppStyles.bodyOf(context),
         ),
       ],
     );

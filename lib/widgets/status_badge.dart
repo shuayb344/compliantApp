@@ -17,6 +17,8 @@ class StatusBadge extends StatelessWidget {
     final color = Helpers.getStatusColor(status);
     final bgColor = Helpers.getStatusBgColor(status);
     final text = Helpers.getStatusText(status);
+    final theme = Theme.of(context);
+    final isDark = theme.brightness == Brightness.dark;
 
     return Container(
       padding: EdgeInsets.symmetric(
@@ -24,7 +26,7 @@ class StatusBadge extends StatelessWidget {
         vertical: compact ? 3 : 5,
       ),
       decoration: BoxDecoration(
-        color: bgColor,
+        color: isDark ? color.withValues(alpha: 0.15) : bgColor,
         borderRadius: BorderRadius.circular(20),
         border: Border.all(color: color.withValues(alpha: 0.3), width: 1),
       ),

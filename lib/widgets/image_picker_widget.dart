@@ -24,9 +24,11 @@ class _ImagePickerWidgetState extends State<ImagePickerWidget> {
 
   Future<void> _pickImage(ImageSource source) async {
     if (_selectedImages.length >= widget.maxImages) {
-      ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text('Maximum images reached')),
-      );
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(content: Text('Maximum images reached')),
+        );
+      }
       return;
     }
 
@@ -48,8 +50,10 @@ class _ImagePickerWidgetState extends State<ImagePickerWidget> {
   }
 
   void _showImageSourceActionSheet() {
+    final theme = Theme.of(context);
     showModalBottomSheet(
       context: context,
+      backgroundColor: theme.cardColor,
       shape: const RoundedRectangleBorder(
         borderRadius: BorderRadius.vertical(top: Radius.circular(20)),
       ),
@@ -59,9 +63,9 @@ class _ImagePickerWidgetState extends State<ImagePickerWidget> {
           child: Column(
             mainAxisSize: MainAxisSize.min,
             children: [
-              const Text(
+              Text(
                 'Select Image Source',
-                style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
+                style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold, color: theme.colorScheme.onSurface),
               ),
               const SizedBox(height: 20),
               Row(
@@ -93,6 +97,7 @@ class _ImagePickerWidgetState extends State<ImagePickerWidget> {
   }
 
   Widget _buildSourceOption(IconData icon, String label, VoidCallback onTap) {
+    final theme = Theme.of(context);
     return InkWell(
       onTap: onTap,
       child: Column(
@@ -100,13 +105,13 @@ class _ImagePickerWidgetState extends State<ImagePickerWidget> {
           Container(
             padding: const EdgeInsets.all(16),
             decoration: BoxDecoration(
-              color: AppColors.primary.withValues(alpha: 0.1),
+              color: theme.colorScheme.primary.withValues(alpha: 0.1),
               shape: BoxShape.circle,
             ),
-            child: Icon(icon, color: AppColors.primary, size: 32),
+            child: Icon(icon, color: theme.colorScheme.primary, size: 32),
           ),
           const SizedBox(height: 8),
-          Text(label, style: const TextStyle(fontWeight: FontWeight.w600)),
+          Text(label, style: TextStyle(fontWeight: FontWeight.w600, color: theme.colorScheme.onSurface)),
         ],
       ),
     );
@@ -121,6 +126,9 @@ class _ImagePickerWidgetState extends State<ImagePickerWidget> {
 
   @override
   Widget build(BuildContext context) {
+    final theme = Theme.of(context);
+    final isDark = theme.brightness == Brightness.dark;
+
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
@@ -170,27 +178,27 @@ class _ImagePickerWidgetState extends State<ImagePickerWidget> {
                   width: 80,
                   height: 80,
                   decoration: BoxDecoration(
-                    color: AppColors.surfaceLight,
+                    color: isDark ? theme.colorScheme.surfaceContainerHighest : AppColors.surfaceLight,
                     borderRadius: BorderRadius.circular(12),
                     border: Border.all(
-                      color: AppColors.divider,
+                      color: theme.dividerColor,
                       style: BorderStyle.solid,
                     ),
                   ),
                   child: Column(
                     mainAxisAlignment: MainAxisAlignment.center,
                     children: [
-                      const Icon(
+                      Icon(
                         Icons.add_a_photo_outlined,
-                        color: AppColors.textSecondary,
+                        color: theme.colorScheme.onSurface.withValues(alpha: 0.6),
                         size: 28,
                       ),
                       const SizedBox(height: 4),
                       Text(
                         AppStrings.add,
-                        style: const TextStyle(
+                        style: TextStyle(
                           fontSize: 12,
-                          color: AppColors.textSecondary,
+                          color: theme.colorScheme.onSurface.withValues(alpha: 0.6),
                           fontWeight: FontWeight.w600,
                         ),
                       ),

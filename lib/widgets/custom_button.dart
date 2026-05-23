@@ -19,22 +19,29 @@ class CustomButton extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final theme = Theme.of(context);
+    final isDark = theme.brightness == Brightness.dark;
+
     if (isOutlined) {
       return OutlinedButton(
         onPressed: isLoading ? null : onPressed,
-        style: AppStyles.outlinedButtonStyle,
-        child: _buildContent(),
+        style: AppStyles.outlinedButtonStyle.copyWith(
+          foregroundColor: WidgetStateProperty.all(theme.colorScheme.onSurface),
+          side: WidgetStateProperty.all(BorderSide(color: theme.dividerColor, width: 1.5)),
+        ),
+        child: _buildContent(context),
       );
     }
 
     return ElevatedButton(
       onPressed: isLoading ? null : onPressed,
       style: AppStyles.primaryButtonStyle,
-      child: _buildContent(),
+      child: _buildContent(context),
     );
   }
 
-  Widget _buildContent() {
+  Widget _buildContent(BuildContext context) {
+    final theme = Theme.of(context);
     if (isLoading) {
       return const SizedBox(
         height: 20,

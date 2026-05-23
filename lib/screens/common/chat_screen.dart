@@ -66,21 +66,19 @@ class _ChatScreenState extends State<ChatScreen> {
   Widget build(BuildContext context) {
     final auth = Provider.of<AuthProvider>(context);
     final userId = auth.user?.uid;
+    final theme = Theme.of(context);
 
     return Scaffold(
-      backgroundColor: AppColors.background,
       appBar: AppBar(
         title: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            const Text('Discussion', style: TextStyle(color: AppColors.primary, fontWeight: FontWeight.bold, fontSize: 16)),
-            Text('Ref: ${widget.complaint.refId}', style: const TextStyle(fontSize: 11, color: AppColors.textSecondary)),
+            Text('Discussion', style: TextStyle(color: theme.colorScheme.onSurface, fontWeight: FontWeight.bold, fontSize: 16)),
+            Text('Ref: ${widget.complaint.refId}', style: TextStyle(fontSize: 11, color: theme.colorScheme.onSurface.withValues(alpha: 0.6))),
           ],
         ),
-        backgroundColor: Colors.white,
-        elevation: 0,
         leading: IconButton(
-          icon: const Icon(Icons.arrow_back, color: AppColors.primary),
+          icon: Icon(Icons.arrow_back, color: theme.colorScheme.onSurface),
           onPressed: () => Navigator.pop(context),
         ),
       ),
@@ -101,9 +99,9 @@ class _ChatScreenState extends State<ChatScreen> {
                     child: Column(
                       mainAxisAlignment: MainAxisAlignment.center,
                       children: [
-                        Icon(Icons.forum_outlined, size: 64, color: AppColors.textHint.withValues(alpha: 0.3)),
+                        Icon(Icons.forum_outlined, size: 64, color: theme.colorScheme.onSurface.withValues(alpha: 0.2)),
                         const SizedBox(height: 16),
-                        const Text('Start a conversation about this complaint.', style: TextStyle(color: AppColors.textHint)),
+                        Text('Start a conversation about this complaint.', style: TextStyle(color: theme.colorScheme.onSurface.withValues(alpha: 0.4))),
                       ],
                     ),
                   );
@@ -130,6 +128,9 @@ class _ChatScreenState extends State<ChatScreen> {
   }
 
   Widget _buildMessageBubble(MessageModel msg, bool isMe) {
+    final theme = Theme.of(context);
+    final isDark = theme.brightness == Brightness.dark;
+
     return Align(
       alignment: isMe ? Alignment.centerRight : Alignment.centerLeft,
       child: Container(
@@ -137,7 +138,7 @@ class _ChatScreenState extends State<ChatScreen> {
         constraints: BoxConstraints(maxWidth: MediaQuery.of(context).size.width * 0.75),
         padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
         decoration: BoxDecoration(
-          color: isMe ? AppColors.primary : Colors.white,
+          color: isMe ? AppColors.primary : (isDark ? theme.colorScheme.surfaceContainerHighest : Colors.white),
           borderRadius: BorderRadius.only(
             topLeft: const Radius.circular(16),
             topRight: const Radius.circular(16),
@@ -145,7 +146,7 @@ class _ChatScreenState extends State<ChatScreen> {
             bottomRight: Radius.circular(isMe ? 0 : 16),
           ),
           boxShadow: [
-            BoxShadow(color: Colors.black.withValues(alpha: 0.05), blurRadius: 4, offset: const Offset(0, 2)),
+            BoxShadow(color: theme.shadowColor.withValues(alpha: 0.05), blurRadius: 4, offset: const Offset(0, 2)),
           ],
         ),
         child: Column(
@@ -158,14 +159,14 @@ class _ChatScreenState extends State<ChatScreen> {
               ),
             Text(
               msg.text,
-              style: TextStyle(color: isMe ? Colors.white : AppColors.textPrimary, fontSize: 14),
+              style: TextStyle(color: isMe ? Colors.white : theme.colorScheme.onSurface, fontSize: 14),
             ),
             const SizedBox(height: 4),
             Align(
               alignment: Alignment.bottomRight,
               child: Text(
                 '${msg.timestamp.hour}:${msg.timestamp.minute.toString().padLeft(2, '0')}',
-                style: TextStyle(color: (isMe ? Colors.white : AppColors.textHint).withValues(alpha: 0.6), fontSize: 10),
+                style: TextStyle(color: (isMe ? Colors.white : theme.colorScheme.onSurface.withValues(alpha: 0.4)).withValues(alpha: 0.6), fontSize: 10),
               ),
             ),
           ],
@@ -175,11 +176,14 @@ class _ChatScreenState extends State<ChatScreen> {
   }
 
   Widget _buildMessageInput() {
+    final theme = Theme.of(context);
+    final isDark = theme.brightness == Brightness.dark;
+
     return Container(
       padding: const EdgeInsets.all(16),
-      decoration: const BoxDecoration(
-        color: Colors.white,
-        boxShadow: [BoxShadow(color: Colors.black12, blurRadius: 10, offset: Offset(0, -2))],
+      decoration: BoxDecoration(
+        color: theme.cardColor,
+        boxShadow: [BoxShadow(color: theme.shadowColor.withValues(alpha: 0.1), blurRadius: 10, offset: const Offset(0, -2))],
       ),
       child: SafeArea(
         child: Row(
@@ -191,7 +195,7 @@ class _ChatScreenState extends State<ChatScreen> {
                   hintText: 'Type your message...',
                   border: OutlineInputBorder(borderRadius: BorderRadius.circular(24), borderSide: BorderSide.none),
                   filled: true,
-                  fillColor: AppColors.background,
+                  fillColor: isDark ? theme.colorScheme.surfaceContainerHighest : AppColors.background,
                   contentPadding: const EdgeInsets.symmetric(horizontal: 20, vertical: 10),
                 ),
                 maxLines: null,

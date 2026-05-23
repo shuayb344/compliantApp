@@ -33,20 +33,18 @@ class _NotificationScreenState extends State<NotificationScreen> {
   Widget build(BuildContext context) {
     final auth = Provider.of<AuthProvider>(context);
     final user = auth.user;
+    final theme = Theme.of(context);
 
     return Scaffold(
-      backgroundColor: AppColors.background,
       appBar: AppBar(
-        backgroundColor: Colors.white,
-        elevation: 0,
         leading: IconButton(
-          icon: const Icon(Icons.arrow_back, color: AppColors.primary),
+          icon: Icon(Icons.arrow_back, color: theme.colorScheme.onSurface),
           onPressed: () => Navigator.pop(context),
         ),
-        title: const Text(
+        title: Text(
           'Notifications',
           style: TextStyle(
-              color: AppColors.primary,
+              color: theme.colorScheme.onSurface,
               fontWeight: FontWeight.bold,
               fontSize: 18),
         ),
@@ -82,10 +80,10 @@ class _NotificationScreenState extends State<NotificationScreen> {
                             crossAxisAlignment: CrossAxisAlignment.start,
                             children: [
                               Text(AppStrings.recentAlerts,
-                                  style: AppStyles.heading2),
+                                  style: AppStyles.heading2Of(context)),
                               const SizedBox(height: 4),
                               Text(AppStrings.alertsSubtitle,
-                                  style: AppStyles.bodySmall),
+                                  style: AppStyles.bodySmallOf(context)),
                             ],
                           ),
                         ),
@@ -94,10 +92,10 @@ class _NotificationScreenState extends State<NotificationScreen> {
                             onPressed: () => user != null
                                 ? provider.markAllAsRead(user.uid)
                                 : null,
-                            child: const Text(
+                            child: Text(
                               AppStrings.markAllAsRead,
                               style: TextStyle(
-                                color: AppColors.primary,
+                                color: theme.colorScheme.primary,
                                 fontWeight: FontWeight.bold,
                                 fontSize: 13,
                               ),
@@ -122,6 +120,7 @@ class _NotificationScreenState extends State<NotificationScreen> {
       NotificationModel n, BuildContext context, NotificationProvider provider) {
     final icon = Helpers.getNotificationIcon(n.type);
     final color = Helpers.getNotificationColor(n.type);
+    final theme = Theme.of(context);
 
     return GestureDetector(
       onTap: () {
@@ -135,7 +134,7 @@ class _NotificationScreenState extends State<NotificationScreen> {
       child: Container(
         margin: const EdgeInsets.only(bottom: 16),
         padding: const EdgeInsets.all(16),
-        decoration: AppStyles.cardDecoration.copyWith(
+        decoration: AppStyles.cardDecorationOf(context).copyWith(
           border: n.isRead ? null : Border.all(color: AppColors.accent, width: 1),
         ),
         child: Row(
@@ -164,19 +163,20 @@ class _NotificationScreenState extends State<NotificationScreen> {
                             fontWeight:
                                 n.isRead ? FontWeight.w500 : FontWeight.bold,
                             fontSize: 14,
+                            color: theme.colorScheme.onSurface,
                           ),
                         ),
                       ),
                       Text(
                         Helpers.formatTimeAgo(n.createdAt),
-                        style: AppStyles.bodySmall,
+                        style: AppStyles.bodySmallOf(context),
                       ),
                     ],
                   ),
                   const SizedBox(height: 4),
                   Text(
                     n.message,
-                    style: AppStyles.cardDescription,
+                    style: AppStyles.cardDescriptionOf(context),
                   ),
                 ],
               ),
@@ -188,6 +188,7 @@ class _NotificationScreenState extends State<NotificationScreen> {
   }
 
   Widget _buildEmptyState() {
+    final theme = Theme.of(context);
     return Center(
       child: Padding(
         padding: const EdgeInsets.all(40),
@@ -197,22 +198,22 @@ class _NotificationScreenState extends State<NotificationScreen> {
             Container(
               padding: const EdgeInsets.all(24),
               decoration: BoxDecoration(
-                color: AppColors.primary.withValues(alpha: 0.1),
+                color: theme.colorScheme.primary.withValues(alpha: 0.1),
                 shape: BoxShape.circle,
               ),
-              child: const Icon(Icons.notifications_none,
-                  color: AppColors.primary, size: 48),
+              child: Icon(Icons.notifications_none,
+                  color: theme.colorScheme.primary, size: 48),
             ),
             const SizedBox(height: 24),
-            const Text(
+            Text(
               AppStrings.allCaughtUp,
-              style: AppStyles.heading2,
+              style: AppStyles.heading2Of(context),
             ),
             const SizedBox(height: 8),
-            const Text(
+            Text(
               AppStrings.noUnreadNotifications,
               textAlign: TextAlign.center,
-              style: AppStyles.subtitle,
+              style: AppStyles.subtitleOf(context),
             ),
           ],
         ),

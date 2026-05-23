@@ -44,22 +44,20 @@ class _ProfileScreenState extends State<ProfileScreen>
     final auth = Provider.of<AuthProvider>(context);
     final themeProvider = Provider.of<ThemeProvider>(context);
     final user = auth.user;
-    final isDark = Theme.of(context).brightness == Brightness.dark;
+    final theme = Theme.of(context);
+    final isDark = theme.brightness == Brightness.dark;
 
     return Scaffold(
-      backgroundColor: isDark ? const Color(0xFF121212) : AppColors.background,
       appBar: AppBar(
-        backgroundColor: isDark ? const Color(0xFF1E1E1E) : Colors.white,
-        elevation: 0,
         leading: IconButton(
           icon: Icon(Icons.arrow_back,
-              color: isDark ? Colors.white : AppColors.primary),
+              color: theme.colorScheme.onSurface),
           onPressed: () => Navigator.pop(context),
         ),
         title: Text(
           AppStrings.myProfile,
           style: TextStyle(
-            color: isDark ? Colors.white : AppColors.primary,
+            color: theme.colorScheme.onSurface,
             fontWeight: FontWeight.bold,
             fontSize: 18,
           ),
@@ -72,58 +70,58 @@ class _ProfileScreenState extends State<ProfileScreen>
           child: Column(
             children: [
               // ── Header Profile Info ──
-              _buildProfileHeader(user, isDark),
+              _buildProfileHeader(user, context),
 
               const SizedBox(height: 20),
 
               // ── Account Settings ──
-              _buildSectionLabel('ACCOUNT', isDark),
+              _buildSectionLabel('ACCOUNT', context),
               const SizedBox(height: 8),
-              _buildSettingsGroup(isDark, [
+              _buildSettingsGroup(context, [
                 _buildSettingItem(
+                  context,
                   icon: Icons.person_outline,
                   title: AppStrings.editProfile,
                   subtitle: 'Update your name & info',
                   color: const Color(0xFF3B82F6),
-                  isDark: isDark,
                   onTap: () => _showEditProfileSheet(context, auth),
                 ),
-                _buildDivider(isDark),
+                _buildDivider(context),
                 _buildSettingItem(
+                  context,
                   icon: Icons.notifications_none_outlined,
                   title: AppStrings.notifications,
                   subtitle: 'Manage alert preferences',
                   color: const Color(0xFFF59E0B),
-                  isDark: isDark,
                   onTap: () =>
                       Navigator.pushNamed(context, AppRoutes.userNotifications),
                 ),
-                _buildDivider(isDark),
-                _buildDarkModeItem(themeProvider, isDark),
+                _buildDivider(context),
+                _buildDarkModeItem(themeProvider, context),
               ]),
 
               const SizedBox(height: 20),
 
               // ── Support ──
-              _buildSectionLabel('SUPPORT', isDark),
+              _buildSectionLabel('SUPPORT', context),
               const SizedBox(height: 8),
-              _buildSettingsGroup(isDark, [
+              _buildSettingsGroup(context, [
                 _buildSettingItem(
+                  context,
                   icon: Icons.help_outline,
                   title: AppStrings.helpCenter,
                   subtitle: 'FAQs & common questions',
                   color: const Color(0xFF059669),
-                  isDark: isDark,
-                  onTap: () => _showHelpCenterSheet(context, isDark),
+                  onTap: () => _showHelpCenterSheet(context),
                 ),
-                _buildDivider(isDark),
+                _buildDivider(context),
                 _buildSettingItem(
+                  context,
                   icon: Icons.info_outline,
                   title: AppStrings.aboutApp,
                   subtitle: 'Version info & credits',
                   color: const Color(0xFF8B5CF6),
-                  isDark: isDark,
-                  onTap: () => _showAboutAppDialog(context, isDark),
+                  onTap: () => _showAboutAppDialog(context),
                 ),
               ]),
 
@@ -170,10 +168,7 @@ class _ProfileScreenState extends State<ProfileScreen>
               const SizedBox(height: 20),
               Text(
                 AppStrings.version,
-                style: TextStyle(
-                  color: isDark ? Colors.white38 : AppColors.textHint,
-                  fontSize: 12,
-                ),
+                style: AppStyles.bodySmallOf(context),
               ),
               const SizedBox(height: 40),
             ],
@@ -183,22 +178,21 @@ class _ProfileScreenState extends State<ProfileScreen>
     );
   }
 
-  // ═══════════════════════════════════════════════════════════════════════
-  //  PROFILE HEADER
-  // ═══════════════════════════════════════════════════════════════════════
+  Widget _buildProfileHeader(dynamic user, BuildContext context) {
+    final theme = Theme.of(context);
+    final isDark = theme.brightness == Brightness.dark;
 
-  Widget _buildProfileHeader(dynamic user, bool isDark) {
     return Container(
       padding: const EdgeInsets.all(32),
       decoration: BoxDecoration(
-        color: isDark ? const Color(0xFF1E1E1E) : Colors.white,
+        color: theme.cardColor,
         borderRadius: const BorderRadius.only(
           bottomLeft: Radius.circular(32),
           bottomRight: Radius.circular(32),
         ),
         boxShadow: [
           BoxShadow(
-            color: (isDark ? Colors.black : AppColors.shadow).withValues(alpha: 0.1),
+            color: theme.shadowColor.withValues(alpha: 0.1),
             blurRadius: 20,
             offset: const Offset(0, 8),
           ),
@@ -207,7 +201,6 @@ class _ProfileScreenState extends State<ProfileScreen>
       width: double.infinity,
       child: Column(
         children: [
-          // Avatar with gradient ring
           Container(
             padding: const EdgeInsets.all(4),
             decoration: BoxDecoration(
@@ -227,13 +220,13 @@ class _ProfileScreenState extends State<ProfileScreen>
             ),
             child: CircleAvatar(
               radius: 48,
-              backgroundColor: isDark ? const Color(0xFF2A2A2A) : AppColors.surfaceLight,
+              backgroundColor: isDark ? theme.colorScheme.surfaceContainerHighest : AppColors.surfaceLight,
               child: Text(
                 user?.name[0].toUpperCase() ?? 'U',
                 style: TextStyle(
                   fontSize: 38,
                   fontWeight: FontWeight.bold,
-                  color: isDark ? Colors.white : AppColors.primary,
+                  color: theme.colorScheme.primary,
                 ),
               ),
             ),
@@ -241,20 +234,12 @@ class _ProfileScreenState extends State<ProfileScreen>
           const SizedBox(height: 16),
           Text(
             user?.name ?? 'User Name',
-            style: TextStyle(
-              fontSize: 22,
-              fontWeight: FontWeight.w700,
-              color: isDark ? Colors.white : AppColors.textPrimary,
-              letterSpacing: -0.3,
-            ),
+            style: AppStyles.heading2Of(context),
           ),
           const SizedBox(height: 4),
           Text(
             user?.email ?? 'user@example.com',
-            style: TextStyle(
-              fontSize: 14,
-              color: isDark ? Colors.white54 : AppColors.textSecondary,
-            ),
+            style: AppStyles.bodySmallOf(context),
           ),
           const SizedBox(height: 16),
           Container(
@@ -262,7 +247,7 @@ class _ProfileScreenState extends State<ProfileScreen>
             decoration: BoxDecoration(
               gradient: LinearGradient(
                 colors: [
-                  AppColors.primary.withValues(alpha: 0.15),
+                  theme.colorScheme.primary.withValues(alpha: 0.15),
                   const Color(0xFF3B82F6).withValues(alpha: 0.1),
                 ],
               ),
@@ -274,13 +259,13 @@ class _ProfileScreenState extends State<ProfileScreen>
                 Icon(
                   Icons.verified,
                   size: 14,
-                  color: isDark ? const Color(0xFF60A5FA) : AppColors.primary,
+                  color: isDark ? const Color(0xFF60A5FA) : theme.colorScheme.primary,
                 ),
                 const SizedBox(width: 6),
                 Text(
                   user?.role.toUpperCase() ?? 'USER',
                   style: TextStyle(
-                    color: isDark ? const Color(0xFF60A5FA) : AppColors.primary,
+                    color: isDark ? const Color(0xFF60A5FA) : theme.colorScheme.primary,
                     fontWeight: FontWeight.bold,
                     fontSize: 12,
                     letterSpacing: 1.2,
@@ -294,64 +279,46 @@ class _ProfileScreenState extends State<ProfileScreen>
     );
   }
 
-  // ═══════════════════════════════════════════════════════════════════════
-  //  SETTINGS HELPERS
-  // ═══════════════════════════════════════════════════════════════════════
-
-  Widget _buildSectionLabel(String title, bool isDark) {
+  Widget _buildSectionLabel(String title, BuildContext context) {
     return Padding(
       padding: const EdgeInsets.symmetric(horizontal: 28),
       child: Align(
         alignment: Alignment.centerLeft,
         child: Text(
           title,
-          style: TextStyle(
-            fontSize: 12,
-            fontWeight: FontWeight.w700,
-            color: isDark ? Colors.white38 : AppColors.textHint,
-            letterSpacing: 1.5,
-          ),
+          style: AppStyles.captionOf(context).copyWith(fontWeight: FontWeight.w700, letterSpacing: 1.5),
         ),
       ),
     );
   }
 
-  Widget _buildSettingsGroup(bool isDark, List<Widget> children) {
+  Widget _buildSettingsGroup(BuildContext context, List<Widget> children) {
     return Container(
       margin: const EdgeInsets.symmetric(horizontal: 24),
-      decoration: BoxDecoration(
-        color: isDark ? const Color(0xFF1E1E1E) : Colors.white,
-        borderRadius: BorderRadius.circular(20),
-        boxShadow: [
-          BoxShadow(
-            color: (isDark ? Colors.black : AppColors.shadow).withValues(alpha: 0.08),
-            blurRadius: 16,
-            offset: const Offset(0, 4),
-          ),
-        ],
-      ),
+      decoration: AppStyles.cardDecorationOf(context),
       child: Column(children: children),
     );
   }
 
-  Widget _buildDivider(bool isDark) {
+  Widget _buildDivider(BuildContext context) {
     return Padding(
       padding: const EdgeInsets.only(left: 72),
       child: Divider(
         height: 1,
-        color: isDark ? Colors.white10 : AppColors.divider.withValues(alpha: 0.5),
+        color: Theme.of(context).dividerColor,
       ),
     );
   }
 
-  Widget _buildSettingItem({
+  Widget _buildSettingItem(
+    BuildContext context, {
     required IconData icon,
     required String title,
     required String subtitle,
     required Color color,
-    required bool isDark,
     required VoidCallback onTap,
   }) {
+    final theme = Theme.of(context);
     return Material(
       color: Colors.transparent,
       child: InkWell(
@@ -361,7 +328,6 @@ class _ProfileScreenState extends State<ProfileScreen>
           padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 14),
           child: Row(
             children: [
-              // Icon with colored background
               Container(
                 padding: const EdgeInsets.all(10),
                 decoration: BoxDecoration(
@@ -371,34 +337,25 @@ class _ProfileScreenState extends State<ProfileScreen>
                 child: Icon(icon, color: color, size: 22),
               ),
               const SizedBox(width: 16),
-              // Title & subtitle
               Expanded(
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
                     Text(
                       title,
-                      style: TextStyle(
-                        fontWeight: FontWeight.w600,
-                        fontSize: 15,
-                        color: isDark ? Colors.white : AppColors.textPrimary,
-                      ),
+                      style: AppStyles.cardTitleOf(context),
                     ),
                     const SizedBox(height: 2),
                     Text(
                       subtitle,
-                      style: TextStyle(
-                        fontSize: 12,
-                        color: isDark ? Colors.white38 : AppColors.textHint,
-                      ),
+                      style: AppStyles.bodySmallOf(context),
                     ),
                   ],
                 ),
               ),
-              // Arrow
               Icon(
                 Icons.chevron_right_rounded,
-                color: isDark ? Colors.white24 : AppColors.textHint,
+                color: theme.colorScheme.onSurface.withValues(alpha: 0.3),
                 size: 22,
               ),
             ],
@@ -408,7 +365,8 @@ class _ProfileScreenState extends State<ProfileScreen>
     );
   }
 
-  Widget _buildDarkModeItem(ThemeProvider themeProvider, bool isDark) {
+  Widget _buildDarkModeItem(ThemeProvider themeProvider, BuildContext context) {
+    final theme = Theme.of(context);
     return Padding(
       padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 10),
       child: Row(
@@ -440,19 +398,12 @@ class _ProfileScreenState extends State<ProfileScreen>
               children: [
                 Text(
                   AppStrings.darkMode,
-                  style: TextStyle(
-                    fontWeight: FontWeight.w600,
-                    fontSize: 15,
-                    color: isDark ? Colors.white : AppColors.textPrimary,
-                  ),
+                  style: AppStyles.cardTitleOf(context),
                 ),
                 const SizedBox(height: 2),
                 Text(
                   themeProvider.isDarkMode ? 'Currently dark' : 'Currently light',
-                  style: TextStyle(
-                    fontSize: 12,
-                    color: isDark ? Colors.white38 : AppColors.textHint,
-                  ),
+                  style: AppStyles.bodySmallOf(context),
                 ),
               ],
             ),
@@ -461,20 +412,15 @@ class _ProfileScreenState extends State<ProfileScreen>
             value: themeProvider.isDarkMode,
             onChanged: (val) => themeProvider.setDarkMode(val),
             activeColor: const Color(0xFF6366F1),
-            activeTrackColor: const Color(0xFF6366F1).withValues(alpha: 0.3),
           ),
         ],
       ),
     );
   }
 
-  // ═══════════════════════════════════════════════════════════════════════
-  //  EDIT PROFILE BOTTOM SHEET
-  // ═══════════════════════════════════════════════════════════════════════
-
   void _showEditProfileSheet(BuildContext context, AuthProvider auth) {
     final nameController = TextEditingController(text: auth.user?.name ?? '');
-    final isDark = Theme.of(context).brightness == Brightness.dark;
+    final theme = Theme.of(context);
 
     showModalBottomSheet(
       context: context,
@@ -489,7 +435,7 @@ class _ProfileScreenState extends State<ProfileScreen>
               bottom: MediaQuery.of(ctx).viewInsets.bottom,
             ),
             decoration: BoxDecoration(
-              color: isDark ? const Color(0xFF1E1E1E) : Colors.white,
+              color: theme.cardColor,
               borderRadius:
                   const BorderRadius.vertical(top: Radius.circular(28)),
             ),
@@ -499,13 +445,12 @@ class _ProfileScreenState extends State<ProfileScreen>
                 mainAxisSize: MainAxisSize.min,
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
-                  // Drag handle
                   Center(
                     child: Container(
                       width: 40,
                       height: 4,
                       decoration: BoxDecoration(
-                        color: isDark ? Colors.white24 : Colors.grey[300],
+                        color: theme.dividerColor,
                         borderRadius: BorderRadius.circular(2),
                       ),
                     ),
@@ -525,90 +470,38 @@ class _ProfileScreenState extends State<ProfileScreen>
                       const SizedBox(width: 14),
                       Text(
                         AppStrings.editProfile,
-                        style: TextStyle(
-                          fontSize: 22,
-                          fontWeight: FontWeight.w700,
-                          color: isDark ? Colors.white : AppColors.textPrimary,
-                        ),
+                        style: AppStyles.heading2Of(context),
                       ),
                     ],
                   ),
                   const SizedBox(height: 8),
                   Text(
                     'Update your display name below.',
-                    style: TextStyle(
-                      fontSize: 14,
-                      color: isDark ? Colors.white54 : AppColors.textSecondary,
-                    ),
+                    style: AppStyles.bodySmallOf(context),
                   ),
                   const SizedBox(height: 28),
-                  // Name field
                   TextField(
                     controller: nameController,
-                    style: TextStyle(
-                      color: isDark ? Colors.white : AppColors.textPrimary,
-                      fontSize: 16,
-                    ),
-                    decoration: InputDecoration(
-                      labelText: 'Full Name',
-                      labelStyle: TextStyle(
-                        color: isDark ? Colors.white54 : AppColors.textSecondary,
-                      ),
-                      hintText: 'Enter your name',
-                      hintStyle: TextStyle(
-                        color: isDark ? Colors.white24 : AppColors.textHint,
-                      ),
-                      prefixIcon: Icon(
-                        Icons.badge_outlined,
-                        color: isDark ? Colors.white38 : AppColors.textHint,
-                      ),
-                      filled: true,
-                      fillColor: isDark
-                          ? const Color(0xFF2A2A2A)
-                          : AppColors.surfaceLight,
-                      border: OutlineInputBorder(
-                        borderRadius: BorderRadius.circular(14),
-                        borderSide: BorderSide.none,
-                      ),
-                      focusedBorder: OutlineInputBorder(
-                        borderRadius: BorderRadius.circular(14),
-                        borderSide: const BorderSide(
-                          color: Color(0xFF3B82F6),
-                          width: 1.5,
-                        ),
-                      ),
+                    style: AppStyles.bodyOf(context),
+                    decoration: AppStyles.inputDecorationOf(
+                      context,
+                      label: 'Full Name',
+                      hint: 'Enter your name',
+                      prefixIcon: const Icon(Icons.badge_outlined),
                     ),
                   ),
                   const SizedBox(height: 12),
-                  // Email (read-only)
                   TextField(
                     enabled: false,
                     controller: TextEditingController(text: auth.user?.email ?? ''),
-                    style: TextStyle(
-                      color: isDark ? Colors.white38 : AppColors.textHint,
-                      fontSize: 16,
-                    ),
-                    decoration: InputDecoration(
-                      labelText: 'Email (cannot be changed)',
-                      labelStyle: TextStyle(
-                        color: isDark ? Colors.white24 : AppColors.textHint,
-                      ),
-                      prefixIcon: Icon(
-                        Icons.email_outlined,
-                        color: isDark ? Colors.white24 : AppColors.textHint,
-                      ),
-                      filled: true,
-                      fillColor: isDark
-                          ? const Color(0xFF252525)
-                          : const Color(0xFFF3F4F6),
-                      border: OutlineInputBorder(
-                        borderRadius: BorderRadius.circular(14),
-                        borderSide: BorderSide.none,
-                      ),
+                    style: AppStyles.bodyOf(context).copyWith(color: theme.colorScheme.onSurface.withValues(alpha: 0.4)),
+                    decoration: AppStyles.inputDecorationOf(
+                      context,
+                      label: 'Email (cannot be changed)',
+                      prefixIcon: const Icon(Icons.email_outlined),
                     ),
                   ),
                   const SizedBox(height: 28),
-                  // Save button
                   SizedBox(
                     width: double.infinity,
                     height: 54,
@@ -677,11 +570,10 @@ class _ProfileScreenState extends State<ProfileScreen>
     );
   }
 
-  // ═══════════════════════════════════════════════════════════════════════
-  //  HELP CENTER BOTTOM SHEET
-  // ═══════════════════════════════════════════════════════════════════════
+  void _showHelpCenterSheet(BuildContext context) {
+    final theme = Theme.of(context);
+    final isDark = theme.brightness == Brightness.dark;
 
-  void _showHelpCenterSheet(BuildContext context, bool isDark) {
     final faqs = [
       {
         'q': 'How do I submit a complaint?',
@@ -720,13 +612,12 @@ class _ProfileScreenState extends State<ProfileScreen>
         minChildSize: 0.4,
         builder: (ctx, scrollController) => Container(
           decoration: BoxDecoration(
-            color: isDark ? const Color(0xFF1E1E1E) : Colors.white,
+            color: theme.cardColor,
             borderRadius:
                 const BorderRadius.vertical(top: Radius.circular(28)),
           ),
           child: Column(
             children: [
-              // Header
               Padding(
                 padding: const EdgeInsets.fromLTRB(28, 16, 28, 0),
                 child: Column(
@@ -736,7 +627,7 @@ class _ProfileScreenState extends State<ProfileScreen>
                         width: 40,
                         height: 4,
                         decoration: BoxDecoration(
-                          color: isDark ? Colors.white24 : Colors.grey[300],
+                          color: theme.dividerColor,
                           borderRadius: BorderRadius.circular(2),
                         ),
                       ),
@@ -757,12 +648,7 @@ class _ProfileScreenState extends State<ProfileScreen>
                         const SizedBox(width: 14),
                         Text(
                           AppStrings.helpCenter,
-                          style: TextStyle(
-                            fontSize: 22,
-                            fontWeight: FontWeight.w700,
-                            color:
-                                isDark ? Colors.white : AppColors.textPrimary,
-                          ),
+                          style: AppStyles.heading2Of(context),
                         ),
                       ],
                     ),
@@ -771,18 +657,13 @@ class _ProfileScreenState extends State<ProfileScreen>
                       alignment: Alignment.centerLeft,
                       child: Text(
                         'Frequently asked questions & help topics',
-                        style: TextStyle(
-                          fontSize: 14,
-                          color:
-                              isDark ? Colors.white54 : AppColors.textSecondary,
-                        ),
+                        style: AppStyles.bodySmallOf(context),
                       ),
                     ),
                     const SizedBox(height: 20),
                   ],
                 ),
               ),
-              // FAQ list
               Expanded(
                 child: ListView.builder(
                   controller: scrollController,
@@ -798,60 +679,6 @@ class _ProfileScreenState extends State<ProfileScreen>
                   },
                 ),
               ),
-              // Contact support footer
-              Container(
-                padding: const EdgeInsets.all(20),
-                decoration: BoxDecoration(
-                  color: isDark ? const Color(0xFF252525) : const Color(0xFFF9FAFB),
-                  border: Border(
-                    top: BorderSide(
-                      color: isDark ? Colors.white10 : AppColors.divider,
-                    ),
-                  ),
-                ),
-                child: Row(
-                  children: [
-                    Container(
-                      padding: const EdgeInsets.all(8),
-                      decoration: BoxDecoration(
-                        color: const Color(0xFF3B82F6).withValues(alpha: 0.1),
-                        borderRadius: BorderRadius.circular(10),
-                      ),
-                      child: const Icon(
-                        Icons.mail_outline_rounded,
-                        color: Color(0xFF3B82F6),
-                        size: 20,
-                      ),
-                    ),
-                    const SizedBox(width: 14),
-                    Expanded(
-                      child: Column(
-                        crossAxisAlignment: CrossAxisAlignment.start,
-                        children: [
-                          Text(
-                            'Still need help?',
-                            style: TextStyle(
-                              fontWeight: FontWeight.w600,
-                              fontSize: 14,
-                              color:
-                                  isDark ? Colors.white : AppColors.textPrimary,
-                            ),
-                          ),
-                          Text(
-                            'support@feedbackportal.com',
-                            style: TextStyle(
-                              fontSize: 12,
-                              color: isDark
-                                  ? Colors.white38
-                                  : AppColors.textSecondary,
-                            ),
-                          ),
-                        ],
-                      ),
-                    ),
-                  ],
-                ),
-              ),
             ],
           ),
         ),
@@ -859,340 +686,51 @@ class _ProfileScreenState extends State<ProfileScreen>
     );
   }
 
-  // ═══════════════════════════════════════════════════════════════════════
-  //  ABOUT APP DIALOG
-  // ═══════════════════════════════════════════════════════════════════════
-
-  void _showAboutAppDialog(BuildContext context, bool isDark) {
-    showGeneralDialog(
+  void _showAboutAppDialog(BuildContext context) {
+    showAboutDialog(
       context: context,
-      barrierDismissible: true,
-      barrierLabel: 'About',
-      barrierColor: Colors.black54,
-      transitionDuration: const Duration(milliseconds: 400),
-      transitionBuilder: (ctx, a1, a2, child) {
-        final curve = CurvedAnimation(parent: a1, curve: Curves.easeOutBack);
-        return ScaleTransition(
-          scale: curve,
-          child: FadeTransition(opacity: a1, child: child),
-        );
-      },
-      pageBuilder: (ctx, a1, a2) {
-        return Center(
-          child: Container(
-            margin: const EdgeInsets.symmetric(horizontal: 32),
-            decoration: BoxDecoration(
-              color: isDark ? const Color(0xFF1E1E1E) : Colors.white,
-              borderRadius: BorderRadius.circular(28),
-              boxShadow: [
-                BoxShadow(
-                  color: Colors.black.withValues(alpha: 0.2),
-                  blurRadius: 30,
-                  offset: const Offset(0, 10),
-                ),
-              ],
-            ),
-            child: Material(
-              color: Colors.transparent,
-              child: Padding(
-                padding: const EdgeInsets.all(32),
-                child: Column(
-                  mainAxisSize: MainAxisSize.min,
-                  children: [
-                    // App Icon
-                    Container(
-                      padding: const EdgeInsets.all(20),
-                      decoration: BoxDecoration(
-                        gradient: const LinearGradient(
-                          colors: [
-                            Color(0xFF1B2A4A),
-                            Color(0xFF3B82F6),
-                          ],
-                          begin: Alignment.topLeft,
-                          end: Alignment.bottomRight,
-                        ),
-                        borderRadius: BorderRadius.circular(24),
-                        boxShadow: [
-                          BoxShadow(
-                            color: const Color(0xFF3B82F6).withValues(alpha: 0.3),
-                            blurRadius: 16,
-                            offset: const Offset(0, 6),
-                          ),
-                        ],
-                      ),
-                      child: const Icon(
-                        Icons.feedback_rounded,
-                        color: Colors.white,
-                        size: 40,
-                      ),
-                    ),
-                    const SizedBox(height: 24),
-                    Text(
-                      AppStrings.appName,
-                      style: TextStyle(
-                        fontSize: 24,
-                        fontWeight: FontWeight.w800,
-                        color: isDark ? Colors.white : AppColors.textPrimary,
-                        letterSpacing: -0.5,
-                      ),
-                    ),
-                    const SizedBox(height: 4),
-                    Container(
-                      padding: const EdgeInsets.symmetric(
-                          horizontal: 12, vertical: 4),
-                      decoration: BoxDecoration(
-                        color: const Color(0xFF3B82F6).withValues(alpha: 0.1),
-                        borderRadius: BorderRadius.circular(8),
-                      ),
-                      child: const Text(
-                        'v1.0.0',
-                        style: TextStyle(
-                          fontSize: 13,
-                          fontWeight: FontWeight.w600,
-                          color: Color(0xFF3B82F6),
-                        ),
-                      ),
-                    ),
-                    const SizedBox(height: 20),
-                    Text(
-                      'A modern complaint & feedback management system designed to streamline communication between users and administrators.',
-                      textAlign: TextAlign.center,
-                      style: TextStyle(
-                        fontSize: 14,
-                        height: 1.6,
-                        color: isDark
-                            ? Colors.white54
-                            : AppColors.textSecondary,
-                      ),
-                    ),
-                    const SizedBox(height: 24),
-                    // Feature highlights
-                    _buildFeatureRow(
-                      Icons.bolt_rounded,
-                      'Real-time Updates',
-                      const Color(0xFFF59E0B),
-                      isDark,
-                    ),
-                    const SizedBox(height: 12),
-                    _buildFeatureRow(
-                      Icons.shield_rounded,
-                      'Secure & Private',
-                      const Color(0xFF059669),
-                      isDark,
-                    ),
-                    const SizedBox(height: 12),
-                    _buildFeatureRow(
-                      Icons.analytics_rounded,
-                      'Admin Analytics',
-                      const Color(0xFF8B5CF6),
-                      isDark,
-                    ),
-                    const SizedBox(height: 28),
-                    Divider(
-                      color: isDark ? Colors.white10 : AppColors.divider,
-                    ),
-                    const SizedBox(height: 16),
-                    Text(
-                      'Built with Flutter & Firebase',
-                      style: TextStyle(
-                        fontSize: 12,
-                        color: isDark ? Colors.white24 : AppColors.textHint,
-                      ),
-                    ),
-                    const SizedBox(height: 4),
-                    Text(
-                      '© 2026 Feedback Portal. All rights reserved.',
-                      style: TextStyle(
-                        fontSize: 11,
-                        color: isDark ? Colors.white24 : AppColors.textHint,
-                      ),
-                    ),
-                    const SizedBox(height: 20),
-                    // Close button
-                    SizedBox(
-                      width: double.infinity,
-                      child: TextButton(
-                        onPressed: () => Navigator.pop(ctx),
-                        style: TextButton.styleFrom(
-                          backgroundColor: isDark
-                              ? Colors.white10
-                              : AppColors.surfaceLight,
-                          padding: const EdgeInsets.symmetric(vertical: 14),
-                          shape: RoundedRectangleBorder(
-                            borderRadius: BorderRadius.circular(14),
-                          ),
-                        ),
-                        child: Text(
-                          'Close',
-                          style: TextStyle(
-                            fontWeight: FontWeight.w600,
-                            fontSize: 15,
-                            color: isDark
-                                ? Colors.white70
-                                : AppColors.textPrimary,
-                          ),
-                        ),
-                      ),
-                    ),
-                  ],
-                ),
-              ),
-            ),
-          ),
-        );
-      },
-    );
-  }
-
-  Widget _buildFeatureRow(
-      IconData icon, String text, Color color, bool isDark) {
-    return Row(
+      applicationName: AppStrings.appName,
+      applicationVersion: '1.0.0',
+      applicationIcon: const Icon(Icons.chat_bubble_outline,
+          color: AppColors.primary, size: 40),
       children: [
-        Container(
-          padding: const EdgeInsets.all(8),
-          decoration: BoxDecoration(
-            color: color.withValues(alpha: 0.1),
-            borderRadius: BorderRadius.circular(10),
-          ),
-          child: Icon(icon, color: color, size: 18),
-        ),
-        const SizedBox(width: 14),
-        Text(
-          text,
-          style: TextStyle(
-            fontSize: 14,
-            fontWeight: FontWeight.w500,
-            color: isDark ? Colors.white70 : AppColors.textPrimary,
+        const Padding(
+          padding: EdgeInsets.only(top: 20),
+          child: Text(
+            'This project was built to streamline complaint management and community feedback with high performance and transparency.',
           ),
         ),
       ],
     );
   }
 
-  // ═══════════════════════════════════════════════════════════════════════
-  //  SIGN OUT
-  // ═══════════════════════════════════════════════════════════════════════
-
   Future<void> _handleSignOut(BuildContext context, AuthProvider auth) async {
-    final isDark = Theme.of(context).brightness == Brightness.dark;
-    final confirmed = await showGeneralDialog<bool>(
+    final theme = Theme.of(context);
+    final confirmed = await showDialog<bool>(
       context: context,
-      barrierDismissible: true,
-      barrierLabel: 'Sign Out',
-      barrierColor: Colors.black54,
-      transitionDuration: const Duration(milliseconds: 300),
-      transitionBuilder: (ctx, a1, a2, child) {
-        return SlideTransition(
-          position: Tween<Offset>(
-            begin: const Offset(0, 0.1),
-            end: Offset.zero,
-          ).animate(CurvedAnimation(parent: a1, curve: Curves.easeOut)),
-          child: FadeTransition(opacity: a1, child: child),
-        );
-      },
-      pageBuilder: (ctx, a1, a2) {
-        return Center(
-          child: Container(
-            margin: const EdgeInsets.symmetric(horizontal: 40),
-            padding: const EdgeInsets.all(28),
-            decoration: BoxDecoration(
-              color: isDark ? const Color(0xFF1E1E1E) : Colors.white,
-              borderRadius: BorderRadius.circular(24),
-              boxShadow: [
-                BoxShadow(
-                  color: Colors.black.withValues(alpha: 0.15),
-                  blurRadius: 20,
-                ),
-              ],
-            ),
-            child: Material(
-              color: Colors.transparent,
-              child: Column(
-                mainAxisSize: MainAxisSize.min,
-                children: [
-                  Container(
-                    padding: const EdgeInsets.all(16),
-                    decoration: BoxDecoration(
-                      color: AppColors.error.withValues(alpha: 0.1),
-                      shape: BoxShape.circle,
-                    ),
-                    child: const Icon(Icons.logout_rounded,
-                        color: AppColors.error, size: 32),
-                  ),
-                  const SizedBox(height: 20),
-                  Text(
-                    'Sign Out',
-                    style: TextStyle(
-                      fontSize: 20,
-                      fontWeight: FontWeight.w700,
-                      color: isDark ? Colors.white : AppColors.textPrimary,
-                    ),
-                  ),
-                  const SizedBox(height: 8),
-                  Text(
-                    'Are you sure you want to sign out of your account?',
-                    textAlign: TextAlign.center,
-                    style: TextStyle(
-                      fontSize: 14,
-                      color:
-                          isDark ? Colors.white54 : AppColors.textSecondary,
-                    ),
-                  ),
-                  const SizedBox(height: 28),
-                  Row(
-                    children: [
-                      Expanded(
-                        child: TextButton(
-                          onPressed: () => Navigator.pop(ctx, false),
-                          style: TextButton.styleFrom(
-                            backgroundColor: isDark
-                                ? Colors.white10
-                                : AppColors.surfaceLight,
-                            padding:
-                                const EdgeInsets.symmetric(vertical: 14),
-                            shape: RoundedRectangleBorder(
-                              borderRadius: BorderRadius.circular(14),
-                            ),
-                          ),
-                          child: Text(
-                            'Cancel',
-                            style: TextStyle(
-                              fontWeight: FontWeight.w600,
-                              color: isDark
-                                  ? Colors.white70
-                                  : AppColors.textPrimary,
-                            ),
-                          ),
-                        ),
-                      ),
-                      const SizedBox(width: 12),
-                      Expanded(
-                        child: ElevatedButton(
-                          onPressed: () => Navigator.pop(ctx, true),
-                          style: ElevatedButton.styleFrom(
-                            backgroundColor: AppColors.error,
-                            foregroundColor: Colors.white,
-                            padding:
-                                const EdgeInsets.symmetric(vertical: 14),
-                            shape: RoundedRectangleBorder(
-                              borderRadius: BorderRadius.circular(14),
-                            ),
-                            elevation: 0,
-                          ),
-                          child: const Text(
-                            'Sign Out',
-                            style: TextStyle(fontWeight: FontWeight.w700),
-                          ),
-                        ),
-                      ),
-                    ],
-                  ),
-                ],
-              ),
-            ),
+      builder: (ctx) => AlertDialog(
+        backgroundColor: theme.cardColor,
+        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(24)),
+        title: const Text('Sign Out'),
+        content: const Text('Are you sure you want to sign out?'),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.pop(ctx, false),
+            child: Text('Cancel', style: TextStyle(color: theme.colorScheme.onSurface.withValues(alpha: 0.6))),
           ),
-        );
-      },
+          ElevatedButton(
+            onPressed: () => Navigator.pop(ctx, true),
+            style: ElevatedButton.styleFrom(
+              backgroundColor: AppColors.error,
+              foregroundColor: Colors.white,
+              shape: RoundedRectangleBorder(
+                  borderRadius: BorderRadius.circular(10)),
+              elevation: 0,
+            ),
+            child: const Text('Sign Out'),
+          ),
+        ],
+      ),
     );
 
     if (confirmed == true && context.mounted) {
@@ -1204,43 +742,15 @@ class _ProfileScreenState extends State<ProfileScreen>
     }
   }
 
-  // ═══════════════════════════════════════════════════════════════════════
-  //  SNACKBAR HELPER
-  // ═══════════════════════════════════════════════════════════════════════
-
   SnackBar _buildSnackBar(String message, {bool isError = false}) {
     return SnackBar(
-      content: Row(
-        children: [
-          Icon(
-            isError ? Icons.error_outline : Icons.check_circle_outline,
-            color: Colors.white,
-            size: 20,
-          ),
-          const SizedBox(width: 10),
-          Flexible(
-            child: Text(
-              message,
-              style: const TextStyle(
-                color: Colors.white,
-                fontWeight: FontWeight.w500,
-              ),
-            ),
-          ),
-        ],
-      ),
-      backgroundColor: isError ? AppColors.error : const Color(0xFF059669),
+      content: Text(message),
       behavior: SnackBarBehavior.floating,
-      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
-      margin: const EdgeInsets.all(16),
-      duration: const Duration(seconds: 3),
+      backgroundColor: isError ? AppColors.error : AppColors.primary,
+      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
     );
   }
 }
-
-// ═══════════════════════════════════════════════════════════════════════════
-//  FAQ TILE WIDGET (Animated Expandable)
-// ═══════════════════════════════════════════════════════════════════════════
 
 class _FAQTile extends StatefulWidget {
   final String question;
@@ -1259,139 +769,54 @@ class _FAQTile extends StatefulWidget {
   State<_FAQTile> createState() => _FAQTileState();
 }
 
-class _FAQTileState extends State<_FAQTile>
-    with SingleTickerProviderStateMixin {
+class _FAQTileState extends State<_FAQTile> {
   bool _isExpanded = false;
-  late AnimationController _controller;
-  late Animation<double> _expandAnim;
-  late Animation<double> _rotateAnim;
-
-  @override
-  void initState() {
-    super.initState();
-    _controller = AnimationController(
-      vsync: this,
-      duration: const Duration(milliseconds: 300),
-    );
-    _expandAnim = CurvedAnimation(
-      parent: _controller,
-      curve: Curves.easeOutCubic,
-    );
-    _rotateAnim = Tween<double>(begin: 0, end: 0.5).animate(
-      CurvedAnimation(parent: _controller, curve: Curves.easeOutCubic),
-    );
-  }
-
-  @override
-  void dispose() {
-    _controller.dispose();
-    super.dispose();
-  }
-
-  void _toggle() {
-    setState(() {
-      _isExpanded = !_isExpanded;
-      if (_isExpanded) {
-        _controller.forward();
-      } else {
-        _controller.reverse();
-      }
-    });
-  }
 
   @override
   Widget build(BuildContext context) {
-    final colors = [
-      const Color(0xFF3B82F6),
-      const Color(0xFF059669),
-      const Color(0xFFF59E0B),
-      const Color(0xFF8B5CF6),
-      const Color(0xFFEF4444),
-    ];
-    final color = colors[widget.index % colors.length];
-
+    final theme = Theme.of(context);
     return Container(
       margin: const EdgeInsets.only(bottom: 12),
       decoration: BoxDecoration(
-        color: widget.isDark ? const Color(0xFF252525) : const Color(0xFFF9FAFB),
+        color: widget.isDark ? theme.colorScheme.surfaceContainerHighest : const Color(0xFFF9FAFB),
         borderRadius: BorderRadius.circular(16),
-        border: _isExpanded
-            ? Border.all(color: color.withValues(alpha: 0.3), width: 1.5)
-            : null,
+        border: Border.all(
+          color: _isExpanded
+              ? theme.colorScheme.primary.withValues(alpha: 0.3)
+              : Colors.transparent,
+          width: 1,
+        ),
       ),
       child: Column(
         children: [
-          InkWell(
-            borderRadius: BorderRadius.circular(16),
-            onTap: _toggle,
-            child: Padding(
-              padding: const EdgeInsets.all(16),
-              child: Row(
-                children: [
-                  Container(
-                    padding: const EdgeInsets.all(6),
-                    decoration: BoxDecoration(
-                      color: color.withValues(alpha: 0.1),
-                      borderRadius: BorderRadius.circular(8),
-                    ),
-                    child: Text(
-                      'Q${widget.index + 1}',
-                      style: TextStyle(
-                        fontSize: 11,
-                        fontWeight: FontWeight.w700,
-                        color: color,
-                      ),
-                    ),
-                  ),
-                  const SizedBox(width: 14),
-                  Expanded(
-                    child: Text(
-                      widget.question,
-                      style: TextStyle(
-                        fontWeight: FontWeight.w600,
-                        fontSize: 14,
-                        color: widget.isDark
-                            ? Colors.white
-                            : AppColors.textPrimary,
-                      ),
-                    ),
-                  ),
-                  RotationTransition(
-                    turns: _rotateAnim,
-                    child: Icon(
-                      Icons.expand_more_rounded,
-                      color: widget.isDark ? Colors.white38 : AppColors.textHint,
-                    ),
-                  ),
-                ],
+          ListTile(
+            onTap: () => setState(() => _isExpanded = !_isExpanded),
+            title: Text(
+              widget.question,
+              style: TextStyle(
+                fontWeight: FontWeight.w600,
+                fontSize: 14,
+                color: theme.colorScheme.onSurface,
               ),
             ),
+            trailing: AnimatedRotation(
+              turns: _isExpanded ? 0.5 : 0,
+              duration: const Duration(milliseconds: 300),
+              child: Icon(Icons.expand_more, color: theme.colorScheme.onSurface.withValues(alpha: 0.4)),
+            ),
           ),
-          SizeTransition(
-            sizeFactor: _expandAnim,
-            child: Padding(
+          if (_isExpanded)
+            Padding(
               padding: const EdgeInsets.fromLTRB(16, 0, 16, 16),
-              child: Container(
-                padding: const EdgeInsets.all(14),
-                decoration: BoxDecoration(
-                  color: widget.isDark
-                      ? Colors.white.withValues(alpha: 0.04)
-                      : Colors.white,
-                  borderRadius: BorderRadius.circular(12),
-                ),
-                child: Text(
-                  widget.answer,
-                  style: TextStyle(
-                    fontSize: 13,
-                    height: 1.6,
-                    color: widget.isDark
-                        ? Colors.white60
-                        : AppColors.textSecondary,
-                  ),
+              child: Text(
+                widget.answer,
+                style: TextStyle(
+                  fontSize: 13,
+                  color: theme.colorScheme.onSurface.withValues(alpha: 0.6),
+                  height: 1.5,
                 ),
               ),
             ),
-          ),
         ],
       ),
     );

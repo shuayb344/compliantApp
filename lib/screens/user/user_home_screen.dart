@@ -53,29 +53,28 @@ class _UserHomeScreenState extends State<UserHomeScreen> {
   Widget build(BuildContext context) {
     final auth = Provider.of<AuthProvider>(context);
     final user = auth.user;
+    final theme = Theme.of(context);
+    final isDark = theme.brightness == Brightness.dark;
 
     return Scaffold(
-      backgroundColor: AppColors.background,
       appBar: AppBar(
-        backgroundColor: Colors.white,
-        elevation: 0,
         leading: Padding(
           padding: const EdgeInsets.all(10.0),
           child: CircleAvatar(
-            backgroundColor: AppColors.surfaceLight,
+            backgroundColor: isDark ? theme.colorScheme.surfaceContainerHighest : AppColors.surfaceLight,
             child: Text(
               user?.name[0].toUpperCase() ?? 'U',
-              style: const TextStyle(color: AppColors.primary, fontWeight: FontWeight.bold),
+              style: TextStyle(color: theme.colorScheme.primary, fontWeight: FontWeight.bold),
             ),
           ),
         ),
-        title: const Text(
+        title: Text(
           AppStrings.appName,
-          style: TextStyle(color: AppColors.primary, fontWeight: FontWeight.bold, fontSize: 18),
+          style: TextStyle(color: theme.colorScheme.onSurface, fontWeight: FontWeight.bold, fontSize: 18),
         ),
         actions: [
           IconButton(
-            icon: const Icon(Icons.settings_outlined, color: AppColors.primary),
+            icon: Icon(Icons.settings_outlined, color: theme.colorScheme.onSurface),
             onPressed: () => Navigator.pushNamed(context, AppRoutes.userProfile),
           ),
         ],
@@ -103,9 +102,9 @@ class _UserHomeScreenState extends State<UserHomeScreen> {
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              Text(AppStrings.welcomeBack, style: AppStyles.bodySmall),
+              Text(AppStrings.welcomeBack, style: AppStyles.bodySmallOf(context)),
               Text('${AppStrings.hello}${user?.name.split(' ')[0] ?? 'User'}',
-                  style: AppStyles.heading2),
+                  style: AppStyles.heading2Of(context)),
               const SizedBox(height: 24),
 
               // Total Reports Card
@@ -179,10 +178,10 @@ class _UserHomeScreenState extends State<UserHomeScreen> {
               Row(
                 mainAxisAlignment: MainAxisAlignment.spaceBetween,
                 children: [
-                  Text(AppStrings.recentComplaints, style: AppStyles.heading3),
+                  Text(AppStrings.recentComplaints, style: AppStyles.heading3Of(context)),
                   TextButton(
                     onPressed: () => Navigator.pushNamed(context, AppRoutes.userComplaints),
-                    child: const Text(AppStrings.seeAll, style: TextStyle(color: AppColors.textSecondary)),
+                    child: Text(AppStrings.seeAll, style: TextStyle(color: theme.colorScheme.onSurface.withValues(alpha: 0.6))),
                   ),
                 ],
               ),
@@ -200,7 +199,7 @@ class _UserHomeScreenState extends State<UserHomeScreen> {
                       child: Padding(
                         padding: const EdgeInsets.symmetric(vertical: 40),
                         child: Text('No complaints yet.',
-                            style: AppStyles.subtitle),
+                            style: AppStyles.subtitleOf(context)),
                       ),
                     );
                   }
@@ -227,14 +226,15 @@ class _UserHomeScreenState extends State<UserHomeScreen> {
   }
 
   Widget _buildSummaryCard(String label, String count, String sublabel, Color color) {
+    final theme = Theme.of(context);
     return Expanded(
       child: Container(
         padding: const EdgeInsets.all(16),
-        decoration: AppStyles.cardDecoration,
+        decoration: AppStyles.cardDecorationOf(context),
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            Text(label, style: AppStyles.caption),
+            Text(label, style: AppStyles.captionOf(context)),
             const SizedBox(height: 8),
             Row(
               crossAxisAlignment: CrossAxisAlignment.baseline,
@@ -248,7 +248,7 @@ class _UserHomeScreenState extends State<UserHomeScreen> {
                   ),
                 ),
                 const SizedBox(width: 4),
-                Text(sublabel, style: const TextStyle(fontSize: 12, color: AppColors.textHint)),
+                Text(sublabel, style: TextStyle(fontSize: 12, color: theme.colorScheme.onSurface.withValues(alpha: 0.4))),
               ],
             ),
             const SizedBox(height: 8),

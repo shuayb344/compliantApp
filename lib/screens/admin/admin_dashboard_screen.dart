@@ -50,33 +50,32 @@ class _AdminDashboardScreenState extends State<AdminDashboardScreen> {
     final auth = Provider.of<AuthProvider>(context);
     final user = auth.user;
     final complaintProvider = Provider.of<ComplaintProvider>(context);
+    final theme = Theme.of(context);
+    final isDark = theme.brightness == Brightness.dark;
 
     return Scaffold(
-      backgroundColor: AppColors.background,
       appBar: AppBar(
-        backgroundColor: Colors.white,
-        elevation: 0,
         leading: Padding(
           padding: const EdgeInsets.all(10.0),
           child: CircleAvatar(
-            backgroundColor: AppColors.surfaceLight,
+            backgroundColor: isDark ? theme.colorScheme.surfaceContainerHighest : AppColors.surfaceLight,
             child: Text(
               user?.name[0].toUpperCase() ?? 'A',
-              style: const TextStyle(color: AppColors.primary, fontWeight: FontWeight.bold),
+              style: TextStyle(color: theme.colorScheme.primary, fontWeight: FontWeight.bold),
             ),
           ),
         ),
-        title: const Text(
+        title: Text(
           AppStrings.appName,
-          style: TextStyle(color: AppColors.primary, fontWeight: FontWeight.bold, fontSize: 18),
+          style: TextStyle(color: theme.colorScheme.onSurface, fontWeight: FontWeight.bold, fontSize: 18),
         ),
         actions: [
           IconButton(
-            icon: const Icon(Icons.bar_chart_outlined, color: AppColors.primary),
+            icon: Icon(Icons.bar_chart_outlined, color: theme.colorScheme.onSurface),
             onPressed: () => Navigator.pushNamed(context, AppRoutes.adminAnalytics),
           ),
           IconButton(
-            icon: const Icon(Icons.settings_outlined, color: AppColors.primary),
+            icon: Icon(Icons.settings_outlined, color: theme.colorScheme.onSurface),
             onPressed: () {},
           ),
         ],
@@ -97,10 +96,10 @@ class _AdminDashboardScreenState extends State<AdminDashboardScreen> {
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              Text(AppStrings.executiveOverview, style: AppStyles.heading2),
+              Text(AppStrings.executiveOverview, style: AppStyles.heading2Of(context)),
               const SizedBox(height: 4),
               Text(AppStrings.executiveOverviewSubtitle,
-                  style: AppStyles.bodySmall),
+                  style: AppStyles.bodySmallOf(context)),
               const SizedBox(height: 24),
 
               // Info Grid
@@ -131,7 +130,8 @@ class _AdminDashboardScreenState extends State<AdminDashboardScreen> {
               // Search Bar
               TextField(
                 onChanged: (v) => complaintProvider.setSearchQuery(v),
-                decoration: AppStyles.inputDecoration(
+                decoration: AppStyles.inputDecorationOf(
+                  context,
                   label: '',
                   hint: AppStrings.searchComplaints,
                   prefixIcon: const Icon(Icons.search),
@@ -185,17 +185,18 @@ class _AdminDashboardScreenState extends State<AdminDashboardScreen> {
   }
 
   Widget _buildStatCard(String label, String value, IconData icon, {String? badge, bool hasDot = false}) {
+    final theme = Theme.of(context);
     return Expanded(
       child: Container(
         padding: const EdgeInsets.all(16),
-        decoration: AppStyles.cardDecoration,
+        decoration: AppStyles.cardDecorationOf(context),
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
             Row(
               mainAxisAlignment: MainAxisAlignment.spaceBetween,
               children: [
-                Icon(icon, size: 20, color: AppColors.primary.withValues(alpha: 0.6)),
+                Icon(icon, size: 20, color: theme.colorScheme.primary.withValues(alpha: 0.6)),
                 if (badge != null)
                   Container(
                     padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 2),
@@ -207,9 +208,9 @@ class _AdminDashboardScreenState extends State<AdminDashboardScreen> {
               ],
             ),
             const SizedBox(height: 12),
-            Text(label, style: const TextStyle(fontSize: 10, fontWeight: FontWeight.bold, color: AppColors.textSecondary, letterSpacing: 0.5)),
+            Text(label, style: TextStyle(fontSize: 10, fontWeight: FontWeight.bold, color: theme.colorScheme.onSurface.withValues(alpha: 0.6), letterSpacing: 0.5)),
             const SizedBox(height: 4),
-            Text(value, style: const TextStyle(fontSize: 24, fontWeight: FontWeight.w800, color: AppColors.textPrimary)),
+            Text(value, style: TextStyle(fontSize: 24, fontWeight: FontWeight.w800, color: theme.colorScheme.onSurface)),
           ],
         ),
       ),
@@ -217,6 +218,7 @@ class _AdminDashboardScreenState extends State<AdminDashboardScreen> {
   }
 
   Widget _buildFilterChip(String label, bool isSelected) {
+    final theme = Theme.of(context);
     return ChoiceChip(
       label: Text(label),
       selected: isSelected,
@@ -224,14 +226,14 @@ class _AdminDashboardScreenState extends State<AdminDashboardScreen> {
         if (selected) Provider.of<ComplaintProvider>(context, listen: false).setCategory(label);
       },
       selectedColor: AppColors.primary,
-      disabledColor: Colors.white,
-      backgroundColor: Colors.white,
+      disabledColor: theme.cardColor,
+      backgroundColor: theme.cardColor,
       labelStyle: TextStyle(
-        color: isSelected ? Colors.white : AppColors.textPrimary,
+        color: isSelected ? Colors.white : theme.colorScheme.onSurface,
         fontWeight: FontWeight.w600,
         fontSize: 13,
       ),
-      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(20), side: BorderSide(color: isSelected ? AppColors.primary : AppColors.divider)),
+      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(20), side: BorderSide(color: isSelected ? AppColors.primary : theme.dividerColor)),
       showCheckmark: false,
     );
   }

@@ -125,18 +125,17 @@ class _AdminComplaintDetailScreenState
 
   @override
   Widget build(BuildContext context) {
+    final theme = Theme.of(context);
+
     return Scaffold(
-      backgroundColor: AppColors.background,
       appBar: AppBar(
-        backgroundColor: Colors.white,
-        elevation: 0,
         leading: IconButton(
-          icon: const Icon(Icons.arrow_back, color: AppColors.primary),
+          icon: Icon(Icons.arrow_back, color: theme.colorScheme.onSurface),
           onPressed: () => Navigator.pop(context),
         ),
-        title: const Text('Admin Review',
+        title: Text('Admin Review',
             style: TextStyle(
-                color: AppColors.primary,
+                color: theme.colorScheme.onSurface,
                 fontWeight: FontWeight.bold,
                 fontSize: 18)),
         actions: [
@@ -167,7 +166,7 @@ class _AdminComplaintDetailScreenState
                       color: AppColors.error.withValues(alpha: 0.5)),
                   const SizedBox(height: 16),
                   Text('Failed to load complaint',
-                      style: AppStyles.subtitle),
+                      style: AppStyles.subtitleOf(context)),
                 ],
               ),
             );
@@ -180,10 +179,10 @@ class _AdminComplaintDetailScreenState
                 children: [
                   Icon(Icons.search_off,
                       size: 64,
-                      color: AppColors.textHint.withValues(alpha: 0.5)),
+                      color: theme.colorScheme.onSurface.withValues(alpha: 0.3)),
                   const SizedBox(height: 16),
                   Text('Complaint not found or deleted',
-                      style: AppStyles.subtitle),
+                      style: AppStyles.subtitleOf(context)),
                   const SizedBox(height: 8),
                   TextButton(
                     onPressed: () => Navigator.pop(context),
@@ -229,17 +228,17 @@ class _AdminComplaintDetailScreenState
                 Container(
                   margin: const EdgeInsets.all(24),
                   padding: const EdgeInsets.all(24),
-                  decoration: AppStyles.cardDecoration,
+                  decoration: AppStyles.cardDecorationOf(context),
                   child: Column(
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
-                      const Text(AppStrings.updateStatus,
-                          style: AppStyles.labelLarge),
+                      Text(AppStrings.updateStatus,
+                          style: AppStyles.labelLargeOf(context)),
                       const SizedBox(height: 12),
                       _buildStatusSelector(complaint),
                       const SizedBox(height: 24),
-                      const Text(AppStrings.respondToComplaint,
-                          style: AppStyles.labelLarge),
+                      Text(AppStrings.respondToComplaint,
+                          style: AppStyles.labelLargeOf(context)),
                       const SizedBox(height: 12),
                       CustomTextField(
                         label: '',

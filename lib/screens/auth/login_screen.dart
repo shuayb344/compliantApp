@@ -74,206 +74,205 @@ class _LoginScreenState extends State<LoginScreen> {
 
   @override
   Widget build(BuildContext context) {
+    final theme = Theme.of(context);
+    final isDark = theme.brightness == Brightness.dark;
+
     return Scaffold(
-      backgroundColor: AppColors.background,
-      body: Stack(
-        children: [
+      body: SafeArea(
+        child: SingleChildScrollView(
+          padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 40),
+          child: Form(
+            key: _formKey,
+            child: Column(
+              children: [
+                // Logo
+                Container(
+                  padding: const EdgeInsets.all(16),
+                  decoration: BoxDecoration(
+                    color: AppColors.primary,
+                    borderRadius: BorderRadius.circular(16),
+                  ),
+                  child: const Icon(
+                    Icons.chat_bubble_outline,
+                    color: Colors.white,
+                    size: 40,
+                  ),
+                ),
+                const SizedBox(height: 24),
+                
+                // Title & Subtitle
+                Text(AppStrings.appName, style: AppStyles.heading1Of(context)),
+                const SizedBox(height: 8),
+                Text(AppStrings.appTagline, style: AppStyles.subtitleOf(context)),
+                const SizedBox(height: 48),
 
-          
-          SafeArea(
-            child: SingleChildScrollView(
-              padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 40),
-              child: Form(
-                key: _formKey,
-                child: Column(
+                // Login Card
+                Container(
+                  padding: const EdgeInsets.all(4),
+                  decoration: BoxDecoration(
+                    color: isDark ? theme.colorScheme.surfaceContainerHighest : AppColors.surfaceLight,
+                    borderRadius: BorderRadius.circular(12),
+                  ),
+                  child: Row(
+                    children: [
+                      _buildRoleButton(AppStrings.user, !_isAdminRole),
+                      _buildRoleButton(AppStrings.admin, _isAdminRole),
+                    ],
+                  ),
+                ),
+                const SizedBox(height: 32),
+
+                // Inputs
+                CustomTextField(
+                  label: AppStrings.email,
+                  hint: AppStrings.emailPlaceholder,
+                  controller: _emailController,
+                  keyboardType: TextInputType.emailAddress,
+                  prefixIcon: Icon(Icons.mail_outline, color: theme.colorScheme.onSurface.withValues(alpha: 0.6)),
+                  validator: Validators.validateEmail,
+                ),
+                const SizedBox(height: 20),
+                
+                Column(
+                  crossAxisAlignment: CrossAxisAlignment.end,
                   children: [
-                    // Logo
-                    Container(
-                      padding: const EdgeInsets.all(16),
-                      decoration: BoxDecoration(
-                        color: AppColors.primary,
-                        borderRadius: BorderRadius.circular(16),
-                      ),
-                      child: const Icon(
-                        Icons.chat_bubble_outline,
-                        color: Colors.white,
-                        size: 40,
-                      ),
-                    ),
-                    const SizedBox(height: 24),
-                    
-                    // Title & Subtitle
-                    Text(AppStrings.appName, style: AppStyles.heading1),
-                    const SizedBox(height: 8),
-                    Text(AppStrings.appTagline, style: AppStyles.subtitle),
-                    const SizedBox(height: 48),
-
-                    // Login Card
-                    Container(
-                      padding: const EdgeInsets.all(4),
-                      decoration: BoxDecoration(
-                        color: AppColors.surfaceLight,
-                        borderRadius: BorderRadius.circular(12),
-                      ),
-                      child: Row(
-                        children: [
-                          _buildRoleButton(AppStrings.user, !_isAdminRole),
-                          _buildRoleButton(AppStrings.admin, _isAdminRole),
-                        ],
-                      ),
-                    ),
-                    const SizedBox(height: 32),
-
-                    // Inputs
                     CustomTextField(
-                      label: AppStrings.email,
-                      hint: AppStrings.emailPlaceholder,
-                      controller: _emailController,
-                      keyboardType: TextInputType.emailAddress,
-                      prefixIcon: const Icon(Icons.mail_outline),
-                      validator: Validators.validateEmail,
+                      label: AppStrings.password,
+                      hint: AppStrings.passwordPlaceholder,
+                      controller: _passwordController,
+                      isPassword: true,
+                      prefixIcon: Icon(Icons.lock_outline, color: theme.colorScheme.onSurface.withValues(alpha: 0.6)),
+                      validator: Validators.validatePassword,
                     ),
-                    const SizedBox(height: 20),
-                    
-                    Column(
-                      crossAxisAlignment: CrossAxisAlignment.end,
-                      children: [
-                        CustomTextField(
-                          label: AppStrings.password,
-                          hint: AppStrings.passwordPlaceholder,
-                          controller: _passwordController,
-                          isPassword: true,
-                          prefixIcon: const Icon(Icons.lock_outline),
-                          validator: Validators.validatePassword,
-                        ),
-                        TextButton(
-                          onPressed: () {
-                            ScaffoldMessenger.of(context).showSnackBar(
-                              const SnackBar(
-                                content: Text('Password reset link sent to your email.'),
-                                backgroundColor: AppColors.primary,
-                              ),
-                            );
-                          },
-                          child: Text(
-                            AppStrings.forgotPassword,
-                            style: TextStyle(
-                              color: AppColors.textPrimary,
-                              fontWeight: FontWeight.w600,
-                              fontSize: 12,
-                            ),
+                    TextButton(
+                      onPressed: () {
+                        ScaffoldMessenger.of(context).showSnackBar(
+                          const SnackBar(
+                            content: Text('Password reset link sent to your email.'),
+                            backgroundColor: AppColors.primary,
                           ),
-                        ),
-                      ],
-                    ),
-                    const SizedBox(height: 24),
-
-                    // Login Button
-                    Consumer<AuthProvider>(
-                      builder: (context, auth, _) {
-                        return CustomButton(
-                          text: AppStrings.login,
-                          isLoading: auth.isLoading,
-                          icon: Icons.arrow_forward,
-                          onPressed: _handleLogin,
                         );
                       },
-                    ),
-                    const SizedBox(height: 32),
-
-                    // OR Divider
-                    Row(
-                      children: [
-                        Expanded(child: Divider(color: AppColors.divider)),
-                        Padding(
-                          padding: const EdgeInsets.symmetric(horizontal: 16),
-                          child: Text(
-                            AppStrings.orDivider,
-                            style: TextStyle(color: AppColors.textHint, fontSize: 12),
-                          ),
+                      child: Text(
+                        AppStrings.forgotPassword,
+                        style: TextStyle(
+                          color: theme.colorScheme.primary,
+                          fontWeight: FontWeight.w600,
+                          fontSize: 12,
                         ),
-                        Expanded(child: Divider(color: AppColors.divider)),
-                      ],
-                    ),
-                    const SizedBox(height: 32),
-
-                    // SSO Button
-                    CustomButton(
-                      text: AppStrings.continueWithSSO,
-                      isOutlined: true,
-                      icon: Icons.shield_outlined,
-                      onPressed: _handleGoogleSignIn,
-                    ),
-                    const SizedBox(height: 24),
-
-                    // Register Link
-                    Row(
-                      mainAxisAlignment: MainAxisAlignment.center,
-                      children: [
-                        Text(
-                          AppStrings.dontHaveAccount,
-                          style: AppStyles.bodySmall,
-                        ),
-                        GestureDetector(
-                          onTap: () => Navigator.pushNamed(context, AppRoutes.register),
-                          child: Text(
-                            AppStrings.register,
-                            style: TextStyle(
-                              color: AppColors.primary,
-                              fontWeight: FontWeight.w700,
-                              fontSize: 14,
-                            ),
-                          ),
-                        ),
-                      ],
-                    ),
-                    const SizedBox(height: 48),
-
-                    // Footer
-                    Row(
-                      mainAxisAlignment: MainAxisAlignment.center,
-                      children: [
-                        _buildFooterLink(AppStrings.privacyPolicy),
-                        const Padding(
-                          padding: EdgeInsets.symmetric(horizontal: 8),
-                          child: Text('•', style: TextStyle(color: AppColors.textHint)),
-                        ),
-                        _buildFooterLink(AppStrings.termsOfService),
-                        const Padding(
-                          padding: EdgeInsets.symmetric(horizontal: 8),
-                          child: Text('•', style: TextStyle(color: AppColors.textHint)),
-                        ),
-                        _buildFooterLink(AppStrings.support),
-                      ],
+                      ),
                     ),
                   ],
                 ),
-              ),
+                const SizedBox(height: 24),
+
+                // Login Button
+                Consumer<AuthProvider>(
+                  builder: (context, auth, _) {
+                    return CustomButton(
+                      text: AppStrings.login,
+                      isLoading: auth.isLoading,
+                      icon: Icons.arrow_forward,
+                      onPressed: _handleLogin,
+                    );
+                  },
+                ),
+                const SizedBox(height: 32),
+
+                // OR Divider
+                Row(
+                  children: [
+                    Expanded(child: Divider(color: theme.dividerColor)),
+                    Padding(
+                      padding: const EdgeInsets.symmetric(horizontal: 16),
+                      child: Text(
+                        AppStrings.orDivider,
+                        style: TextStyle(color: theme.colorScheme.onSurface.withValues(alpha: 0.4), fontSize: 12),
+                      ),
+                    ),
+                    Expanded(child: Divider(color: theme.dividerColor)),
+                  ],
+                ),
+                const SizedBox(height: 32),
+
+                // SSO Button
+                CustomButton(
+                  text: AppStrings.continueWithSSO,
+                  isOutlined: true,
+                  icon: Icons.shield_outlined,
+                  onPressed: _handleGoogleSignIn,
+                ),
+                const SizedBox(height: 24),
+
+                // Register Link
+                Row(
+                  mainAxisAlignment: MainAxisAlignment.center,
+                  children: [
+                    Text(
+                      AppStrings.dontHaveAccount,
+                      style: AppStyles.bodySmallOf(context),
+                    ),
+                    GestureDetector(
+                      onTap: () => Navigator.pushNamed(context, AppRoutes.register),
+                      child: Text(
+                        AppStrings.register,
+                        style: TextStyle(
+                          color: theme.colorScheme.primary,
+                          fontWeight: FontWeight.w700,
+                          fontSize: 14,
+                        ),
+                      ),
+                    ),
+                  ],
+                ),
+                const SizedBox(height: 48),
+
+                // Footer
+                Row(
+                  mainAxisAlignment: MainAxisAlignment.center,
+                  children: [
+                    _buildFooterLink(AppStrings.privacyPolicy),
+                    Padding(
+                      padding: const EdgeInsets.symmetric(horizontal: 8),
+                      child: Text('•', style: TextStyle(color: theme.colorScheme.onSurface.withValues(alpha: 0.3))),
+                    ),
+                    _buildFooterLink(AppStrings.termsOfService),
+                    Padding(
+                      padding: const EdgeInsets.symmetric(horizontal: 8),
+                      child: Text('•', style: TextStyle(color: theme.colorScheme.onSurface.withValues(alpha: 0.3))),
+                    ),
+                    _buildFooterLink(AppStrings.support),
+                  ],
+                ),
+              ],
             ),
           ),
-        ],
+        ),
       ),
     );
   }
 
   Widget _buildRoleButton(String title, bool isSelected) {
+    final theme = Theme.of(context);
+    final isDark = theme.brightness == Brightness.dark;
+    
     return Expanded(
       child: GestureDetector(
         onTap: () => setState(() => _isAdminRole = title == AppStrings.admin),
         child: Container(
           padding: const EdgeInsets.symmetric(vertical: 12),
           decoration: BoxDecoration(
-            color: isSelected ? Colors.white : Colors.transparent,
+            color: isSelected ? (isDark ? theme.colorScheme.surface : Colors.white) : Colors.transparent,
             borderRadius: BorderRadius.circular(10),
             boxShadow: isSelected ? [
-              BoxShadow(color: AppColors.shadow, blurRadius: 4, offset: const Offset(0, 2)),
+              BoxShadow(color: theme.shadowColor.withValues(alpha: 0.1), blurRadius: 4, offset: const Offset(0, 2)),
             ] : null,
           ),
           child: Center(
             child: Text(
               title,
               style: TextStyle(
-                color: isSelected ? AppColors.textPrimary : AppColors.textSecondary,
+                color: isSelected ? theme.colorScheme.onSurface : theme.colorScheme.onSurface.withValues(alpha: 0.6),
                 fontWeight: isSelected ? FontWeight.w600 : FontWeight.w500,
               ),
             ),
@@ -284,11 +283,12 @@ class _LoginScreenState extends State<LoginScreen> {
   }
 
   Widget _buildFooterLink(String title) {
+    final theme = Theme.of(context);
     return Text(
       title,
       style: TextStyle(
         fontSize: 11,
-        color: AppColors.textSecondary,
+        color: theme.colorScheme.onSurface.withValues(alpha: 0.5),
         fontWeight: FontWeight.w500,
       ),
     );

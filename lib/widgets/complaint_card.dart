@@ -27,12 +27,13 @@ class ComplaintCard extends StatelessWidget {
   }
 
   Widget _buildUserCard(BuildContext context) {
+    final theme = Theme.of(context);
     return GestureDetector(
       onTap: onTap,
       child: Container(
         margin: const EdgeInsets.only(bottom: 12),
         padding: const EdgeInsets.all(16),
-        decoration: AppStyles.cardDecorationFlat,
+        decoration: AppStyles.cardDecorationFlatOf(context),
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
@@ -51,7 +52,7 @@ class ComplaintCard extends StatelessWidget {
             // Title
             Text(
               complaint.title,
-              style: AppStyles.cardTitle,
+              style: AppStyles.cardTitleOf(context),
               maxLines: 1,
               overflow: TextOverflow.ellipsis,
             ),
@@ -59,7 +60,7 @@ class ComplaintCard extends StatelessWidget {
             // Description
             Text(
               complaint.description,
-              style: AppStyles.cardDescription,
+              style: AppStyles.cardDescriptionOf(context),
               maxLines: 2,
               overflow: TextOverflow.ellipsis,
             ),
@@ -68,17 +69,17 @@ class ComplaintCard extends StatelessWidget {
             Row(
               children: [
                 Icon(Icons.calendar_today_outlined,
-                    size: 14, color: AppColors.textSecondary),
+                    size: 14, color: theme.colorScheme.onSurface.withValues(alpha: 0.6)),
                 const SizedBox(width: 4),
                 Text(
                   Helpers.formatDateShort(complaint.createdAt),
-                  style: AppStyles.bodySmall,
+                  style: AppStyles.bodySmallOf(context),
                 ),
                 const Spacer(),
                 if (complaint.status == 'pending')
                   Text(
                     Helpers.getDaysPending(complaint.createdAt),
-                    style: TextStyle(
+                    style: const TextStyle(
                       fontSize: 12,
                       fontWeight: FontWeight.w500,
                       color: AppColors.pending,
@@ -90,11 +91,11 @@ class ComplaintCard extends StatelessWidget {
                     style: TextStyle(
                       fontSize: 12,
                       fontWeight: FontWeight.w500,
-                      color: AppColors.textSecondary,
+                      color: theme.colorScheme.onSurface.withValues(alpha: 0.6),
                     ),
                   )
                 else
-                  Icon(Icons.check_circle_outline,
+                  const Icon(Icons.check_circle_outline,
                       size: 18, color: AppColors.resolved),
               ],
             ),
@@ -105,19 +106,22 @@ class ComplaintCard extends StatelessWidget {
   }
 
   Widget _buildAdminCard(BuildContext context) {
+    final theme = Theme.of(context);
+    final isDark = theme.brightness == Brightness.dark;
+    
     return GestureDetector(
       onTap: onTap,
       child: Container(
         margin: const EdgeInsets.only(bottom: 12),
         padding: const EdgeInsets.all(16),
-        decoration: AppStyles.cardDecorationFlat,
+        decoration: AppStyles.cardDecorationFlatOf(context),
         child: Row(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
             // Avatar
             CircleAvatar(
               radius: 22,
-              backgroundColor: AppColors.surfaceLight,
+              backgroundColor: isDark ? theme.colorScheme.surfaceContainerHighest : AppColors.surfaceLight,
               child: Text(
                 complaint.userName.isNotEmpty
                     ? complaint.userName[0].toUpperCase()
@@ -125,7 +129,7 @@ class ComplaintCard extends StatelessWidget {
                 style: TextStyle(
                   fontSize: 18,
                   fontWeight: FontWeight.w600,
-                  color: AppColors.primary,
+                  color: theme.colorScheme.primary,
                 ),
               ),
             ),
@@ -140,10 +144,10 @@ class ComplaintCard extends StatelessWidget {
                     children: [
                       Text(
                         complaint.userName,
-                        style: const TextStyle(
+                        style: TextStyle(
                           fontSize: 14,
                           fontWeight: FontWeight.w600,
-                          color: AppColors.textPrimary,
+                          color: theme.colorScheme.onSurface,
                         ),
                       ),
                       const SizedBox(width: 6),
@@ -157,7 +161,7 @@ class ComplaintCard extends StatelessWidget {
                   // Description
                   Text(
                     complaint.description,
-                    style: AppStyles.cardDescription,
+                    style: AppStyles.cardDescriptionOf(context),
                     maxLines: 2,
                     overflow: TextOverflow.ellipsis,
                   ),
@@ -169,7 +173,7 @@ class ComplaintCard extends StatelessWidget {
                       const SizedBox(width: 10),
                       Text(
                         Helpers.formatDateShort(complaint.createdAt),
-                        style: AppStyles.bodySmall,
+                        style: AppStyles.bodySmallOf(context),
                       ),
                     ],
                   ),
@@ -179,9 +183,9 @@ class ComplaintCard extends StatelessWidget {
                     padding:
                         const EdgeInsets.symmetric(horizontal: 10, vertical: 3),
                     decoration: BoxDecoration(
-                      color: AppColors.surfaceLight,
+                      color: isDark ? theme.colorScheme.surfaceContainerHighest : AppColors.surfaceLight,
                       borderRadius: BorderRadius.circular(8),
-                      border: Border.all(color: AppColors.divider),
+                      border: Border.all(color: theme.dividerColor),
                     ),
                     child: Text(
                       complaint.category,

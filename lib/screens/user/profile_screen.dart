@@ -101,9 +101,33 @@ class ProfileScreen extends StatelessWidget {
             Padding(
               padding: const EdgeInsets.symmetric(horizontal: 24),
               child: TextButton(
-                onPressed: () {
-                  auth.logout();
-                  Navigator.pushNamedAndRemoveUntil(context, AppRoutes.login, (route) => false);
+                onPressed: () async {
+                  final confirmed = await showDialog<bool>(
+                    context: context,
+                    builder: (context) => AlertDialog(
+                      title: const Text('Sign Out'),
+                      content: const Text('Are you sure you want to sign out?'),
+                      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
+                      actions: [
+                        TextButton(
+                          onPressed: () => Navigator.pop(context, false),
+                          child: const Text('Cancel'),
+                        ),
+                        TextButton(
+                          onPressed: () => Navigator.pop(context, true),
+                          style: TextButton.styleFrom(foregroundColor: AppColors.error),
+                          child: const Text('Sign Out'),
+                        ),
+                      ],
+                    ),
+                  );
+
+                  if (confirmed == true && context.mounted) {
+                    await auth.logout();
+                    if (context.mounted) {
+                      Navigator.pushNamedAndRemoveUntil(context, AppRoutes.login, (route) => false);
+                    }
+                  }
                 },
                 style: TextButton.styleFrom(
                   foregroundColor: AppColors.error,

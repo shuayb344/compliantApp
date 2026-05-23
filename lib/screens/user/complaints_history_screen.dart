@@ -87,15 +87,17 @@ class _ComplaintsHistoryScreenState extends State<ComplaintsHistoryScreen> {
                 if (provider.isLoading) {
                   return const Center(child: CircularProgressIndicator());
                 }
-                
+
                 final complaints = provider.filteredComplaints;
-                
+
                 if (complaints.isEmpty) {
                   return Center(
                     child: Column(
                       mainAxisAlignment: MainAxisAlignment.center,
                       children: [
-                        Icon(Icons.search_off_rounded, size: 64, color: AppColors.textHint.withValues(alpha: 0.5)),
+                        Icon(Icons.search_off_rounded,
+                            size: 64,
+                            color: AppColors.textHint.withValues(alpha: 0.5)),
                         const SizedBox(height: 16),
                         Text('No matches found.', style: AppStyles.subtitle),
                       ],
@@ -103,19 +105,28 @@ class _ComplaintsHistoryScreenState extends State<ComplaintsHistoryScreen> {
                   );
                 }
 
-                return ListView.builder(
-                  padding: const EdgeInsets.all(24),
-                  itemCount: complaints.length,
-                  itemBuilder: (context, index) {
-                    return ComplaintCard(
-                      complaint: complaints[index],
-                      onTap: () => Navigator.pushNamed(
-                        context, 
-                        AppRoutes.complaintDetail, 
-                        arguments: complaints[index],
-                      ),
-                    );
+                return RefreshIndicator(
+                  onRefresh: () async {
+                    final user =
+                        Provider.of<AuthProvider>(context, listen: false).user;
+                    if (user != null) {
+                      await provider.fetchComplaints(userId: user.uid);
+                    }
                   },
+                  child: ListView.builder(
+                    padding: const EdgeInsets.all(24),
+                    itemCount: complaints.length,
+                    itemBuilder: (context, index) {
+                      return ComplaintCard(
+                        complaint: complaints[index],
+                        onTap: () => Navigator.pushNamed(
+                          context,
+                          AppRoutes.complaintDetail,
+                          arguments: complaints[index].id,
+                        ),
+                      );
+                    },
+                  ),
                 );
               },
             ),

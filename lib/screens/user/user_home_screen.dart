@@ -38,7 +38,7 @@ class _UserHomeScreenState extends State<UserHomeScreen> {
       case 0:
         break;
       case 1:
-        // Already on home, but could navigate to complaints list
+        Navigator.pushNamed(context, AppRoutes.userComplaints);
         break;
       case 2:
         Navigator.pushNamed(context, AppRoutes.userNotifications);
@@ -76,7 +76,7 @@ class _UserHomeScreenState extends State<UserHomeScreen> {
         actions: [
           IconButton(
             icon: const Icon(Icons.settings_outlined, color: AppColors.primary),
-            onPressed: () {},
+            onPressed: () => Navigator.pushNamed(context, AppRoutes.userProfile),
           ),
         ],
       ),
@@ -90,126 +90,137 @@ class _UserHomeScreenState extends State<UserHomeScreen> {
         backgroundColor: Colors.deepOrangeAccent,
         child: const Icon(Icons.add, color: Colors.white, size: 30),
       ),
-      body: SingleChildScrollView(
-        padding: const EdgeInsets.all(24.0),
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            Text(AppStrings.welcomeBack, style: AppStyles.bodySmall),
-            Text('${AppStrings.hello}${user?.name.split(' ')[0] ?? 'User'}', style: AppStyles.heading2),
-            const SizedBox(height: 24),
+      body: RefreshIndicator(
+        onRefresh: () async {
+          if (user != null) {
+            await Provider.of<ComplaintProvider>(context, listen: false)
+                .fetchComplaints(userId: user.uid);
+          }
+        },
+        child: SingleChildScrollView(
+          physics: const AlwaysScrollableScrollPhysics(),
+          padding: const EdgeInsets.all(24.0),
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Text(AppStrings.welcomeBack, style: AppStyles.bodySmall),
+              Text('${AppStrings.hello}${user?.name.split(' ')[0] ?? 'User'}',
+                  style: AppStyles.heading2),
+              const SizedBox(height: 24),
 
-            // Total Reports Card
-            Container(
-              padding: const EdgeInsets.all(24),
-              decoration: AppStyles.primaryGradientDecoration,
-              child: Row(
-                mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                children: [
-                  Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
-                      Text(
-                        AppStrings.totalReports,
-                        style: TextStyle(
-                          color: Colors.white.withValues(alpha: 0.7),
-                          fontSize: 11,
-                          fontWeight: FontWeight.w600,
-                          letterSpacing: 1.0,
-                        ),
-                      ),
-                      const SizedBox(height: 8),
-                      Consumer<ComplaintProvider>(
-                        builder: (context, provider, _) => Text(
-                          provider.totalCount.toString().padLeft(2, '0'),
-                          style: const TextStyle(
-                            color: Colors.white,
-                            fontSize: 48,
-                            fontWeight: FontWeight.w800,
+              // Total Reports Card
+              Container(
+                padding: const EdgeInsets.all(24),
+                decoration: AppStyles.primaryGradientDecoration,
+                child: Row(
+                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                  children: [
+                    Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        Text(
+                          AppStrings.totalReports,
+                          style: TextStyle(
+                            color: Colors.white.withValues(alpha: 0.7),
+                            fontSize: 11,
+                            fontWeight: FontWeight.w600,
+                            letterSpacing: 1.0,
                           ),
                         ),
+                        const SizedBox(height: 8),
+                        Consumer<ComplaintProvider>(
+                          builder: (context, provider, _) => Text(
+                            provider.totalCount.toString().padLeft(2, '0'),
+                            style: const TextStyle(
+                              color: Colors.white,
+                              fontSize: 48,
+                              fontWeight: FontWeight.w800,
+                            ),
+                          ),
+                        ),
+                      ],
+                    ),
+                    Container(
+                      padding: const EdgeInsets.all(12),
+                      decoration: BoxDecoration(
+                        color: Colors.white.withValues(alpha: 0.2),
+                        borderRadius: BorderRadius.circular(12),
                       ),
-                    ],
-                  ),
-                  Container(
-                    padding: const EdgeInsets.all(12),
-                    decoration: BoxDecoration(
-                      color: Colors.white.withValues(alpha: 0.2),
-                      borderRadius: BorderRadius.circular(12),
+                      child: const Icon(Icons.assignment_outlined, color: Colors.white, size: 32),
                     ),
-                    child: const Icon(Icons.assignment_outlined, color: Colors.white, size: 32),
-                  ),
-                ],
-              ),
-            ),
-            const SizedBox(height: 16),
-
-            // Summary Row
-            Consumer<ComplaintProvider>(
-              builder: (context, provider, _) => Row(
-                children: [
-                  _buildSummaryCard(
-                    AppStrings.pendingLabel,
-                    provider.pendingCount.toString().padLeft(2, '0'),
-                    AppStrings.tasks,
-                    AppColors.pending,
-                  ),
-                  const SizedBox(width: 16),
-                  _buildSummaryCard(
-                    AppStrings.resolvedLabel,
-                    provider.resolvedCount.toString().padLeft(2, '0'),
-                    AppStrings.closed,
-                    AppColors.resolved,
-                  ),
-                ],
-              ),
-            ),
-            const SizedBox(height: 32),
-
-            // Recent Complaints Header
-            Row(
-              mainAxisAlignment: MainAxisAlignment.spaceBetween,
-              children: [
-                Text(AppStrings.recentComplaints, style: AppStyles.heading3),
-                TextButton(
-                  onPressed: () => Navigator.pushNamed(context, AppRoutes.userComplaints),
-                  child: const Text(AppStrings.seeAll, style: TextStyle(color: AppColors.textSecondary)),
+                  ],
                 ),
-              ],
-            ),
-            const SizedBox(height: 8),
+              ),
+              const SizedBox(height: 16),
 
-            // Complaints List
-            Consumer<ComplaintProvider>(
-              builder: (context, provider, _) {
-                if (provider.isLoading) {
-                  return const Center(child: CircularProgressIndicator());
-                }
-                
-                if (provider.complaints.isEmpty) {
-                  return Center(
-                    child: Padding(
-                      padding: const EdgeInsets.symmetric(vertical: 40),
-                      child: Text('No complaints yet.', style: AppStyles.subtitle),
+              // Summary Row
+              Consumer<ComplaintProvider>(
+                builder: (context, provider, _) => Row(
+                  children: [
+                    _buildSummaryCard(
+                      AppStrings.pendingLabel,
+                      provider.pendingCount.toString().padLeft(2, '0'),
+                      AppStrings.tasks,
+                      AppColors.pending,
                     ),
-                  );
-                }
+                    const SizedBox(width: 16),
+                    _buildSummaryCard(
+                      AppStrings.resolvedLabel,
+                      provider.resolvedCount.toString().padLeft(2, '0'),
+                      AppStrings.closed,
+                      AppColors.resolved,
+                    ),
+                  ],
+                ),
+              ),
+              const SizedBox(height: 32),
 
-                return Column(
-                  children: provider.complaints.take(3).map((complaint) {
-                    return ComplaintCard(
-                      complaint: complaint,
-                      onTap: () => Navigator.pushNamed(
-                        context, 
-                        AppRoutes.complaintDetail, 
-                        arguments: complaint,
+              // Recent Complaints Header
+              Row(
+                mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                children: [
+                  Text(AppStrings.recentComplaints, style: AppStyles.heading3),
+                  TextButton(
+                    onPressed: () => Navigator.pushNamed(context, AppRoutes.userComplaints),
+                    child: const Text(AppStrings.seeAll, style: TextStyle(color: AppColors.textSecondary)),
+                  ),
+                ],
+              ),
+              const SizedBox(height: 8),
+
+              // Complaints List
+              Consumer<ComplaintProvider>(
+                builder: (context, provider, _) {
+                  if (provider.isLoading) {
+                    return const Center(child: CircularProgressIndicator());
+                  }
+
+                  if (provider.complaints.isEmpty) {
+                    return Center(
+                      child: Padding(
+                        padding: const EdgeInsets.symmetric(vertical: 40),
+                        child: Text('No complaints yet.',
+                            style: AppStyles.subtitle),
                       ),
                     );
-                  }).toList(),
-                );
-              },
-            ),
-          ],
+                  }
+
+                  return Column(
+                    children: provider.complaints.take(3).map((complaint) {
+                      return ComplaintCard(
+                        complaint: complaint,
+                        onTap: () => Navigator.pushNamed(
+                          context,
+                          AppRoutes.complaintDetail,
+                          arguments: complaint.id,
+                        ),
+                      );
+                    }).toList(),
+                  );
+                },
+              ),
+            ],
+          ),
         ),
       ),
     );
@@ -229,8 +240,7 @@ class _UserHomeScreenState extends State<UserHomeScreen> {
               crossAxisAlignment: CrossAxisAlignment.baseline,
               textBaseline: TextBaseline.alphabetic,
               children: [
-                Text(
-                  count,
+                Text( count,
                   style: TextStyle(
                     fontSize: 24,
                     fontWeight: FontWeight.w800,

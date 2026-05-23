@@ -86,65 +86,77 @@ class _AdminDashboardScreenState extends State<AdminDashboardScreen> {
         onTap: _onNavBarTap,
         isAdmin: true,
       ),
-      body: SingleChildScrollView(
-        padding: const EdgeInsets.all(24.0),
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            Text(AppStrings.executiveOverview, style: AppStyles.heading2),
-            const SizedBox(height: 4),
-            Text(AppStrings.executiveOverviewSubtitle, style: AppStyles.bodySmall),
-            const SizedBox(height: 24),
+      body: RefreshIndicator(
+        onRefresh: () async {
+          await Provider.of<ComplaintProvider>(context, listen: false)
+              .fetchComplaints();
+        },
+        child: SingleChildScrollView(
+          physics: const AlwaysScrollableScrollPhysics(),
+          padding: const EdgeInsets.all(24.0),
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Text(AppStrings.executiveOverview, style: AppStyles.heading2),
+              const SizedBox(height: 4),
+              Text(AppStrings.executiveOverviewSubtitle,
+                  style: AppStyles.bodySmall),
+              const SizedBox(height: 24),
 
-            // Info Grid
-            _buildStatsGrid(complaintProvider),
-            const SizedBox(height: 32),
+              // Info Grid
+              _buildStatsGrid(complaintProvider),
+              const SizedBox(height: 32),
 
-            // Category Filter
-            SingleChildScrollView(
-              scrollDirection: Axis.horizontal,
-              child: Row(
-                children: [
-                  _buildFilterChip('All', complaintProvider.selectedCategory == 'All'),
-                  const SizedBox(width: 8),
-                  _buildFilterChip('Billing', complaintProvider.selectedCategory == 'Billing'),
-                  const SizedBox(width: 8),
-                  _buildFilterChip('Technical', complaintProvider.selectedCategory == 'Technical'),
-                  const SizedBox(width: 8),
-                  _buildFilterChip('Service', complaintProvider.selectedCategory == 'Service'),
-                ],
+              // Category Filter
+              SingleChildScrollView(
+                scrollDirection: Axis.horizontal,
+                child: Row(
+                  children: [
+                    _buildFilterChip(
+                        'All', complaintProvider.selectedCategory == 'All'),
+                    const SizedBox(width: 8),
+                    _buildFilterChip('Billing',
+                        complaintProvider.selectedCategory == 'Billing'),
+                    const SizedBox(width: 8),
+                    _buildFilterChip('Technical',
+                        complaintProvider.selectedCategory == 'Technical'),
+                    const SizedBox(width: 8),
+                    _buildFilterChip('Service',
+                        complaintProvider.selectedCategory == 'Service'),
+                  ],
+                ),
               ),
-            ),
-            const SizedBox(height: 16),
+              const SizedBox(height: 16),
 
-            // Search Bar
-            TextField(
-              onChanged: (v) => complaintProvider.setSearchQuery(v),
-              decoration: AppStyles.inputDecoration(
-                label: '',
-                hint: AppStrings.searchComplaints,
-                prefixIcon: const Icon(Icons.search),
+              // Search Bar
+              TextField(
+                onChanged: (v) => complaintProvider.setSearchQuery(v),
+                decoration: AppStyles.inputDecoration(
+                  label: '',
+                  hint: AppStrings.searchComplaints,
+                  prefixIcon: const Icon(Icons.search),
+                ),
               ),
-            ),
-            const SizedBox(height: 24),
+              const SizedBox(height: 24),
 
-            // Complaints List
-            if (complaintProvider.isLoading)
-              const Center(child: CircularProgressIndicator())
-            else
-              ...complaintProvider.filteredComplaints.map((complaint) {
-                return ComplaintCard(
-                  complaint: complaint,
-                  isAdminView: true,
-                  onTap: () => Navigator.pushNamed(
-                    context, 
-                    AppRoutes.adminComplaintDetail, 
-                    arguments: complaint,
-                  ),
-                );
-              }),
-            const SizedBox(height: 40),
-          ],
+              // Complaints List
+              if (complaintProvider.isLoading)
+                const Center(child: CircularProgressIndicator())
+              else
+                ...complaintProvider.filteredComplaints.map((complaint) {
+                  return ComplaintCard(
+                    complaint: complaint,
+                    isAdminView: true,
+                    onTap: () => Navigator.pushNamed(
+                      context,
+                      AppRoutes.adminComplaintDetail,
+                      arguments: complaint.id,
+                    ),
+                  );
+                }),
+              const SizedBox(height: 40),
+            ],
+          ),
         ),
       ),
     );

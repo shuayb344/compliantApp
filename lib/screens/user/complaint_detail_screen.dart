@@ -1,4 +1,6 @@
 import 'package:flutter/material.dart';
+import 'package:cloud_firestore/cloud_firestore.dart';
+import 'package:cached_network_image/cached_network_image.dart';
 import '../../core/constants/app_colors.dart';
 import '../../core/constants/app_strings.dart';
 import '../../core/constants/app_styles.dart';
@@ -8,9 +10,9 @@ import '../../widgets/status_timeline.dart';
 import '../common/chat_screen.dart';
 
 class ComplaintDetailScreen extends StatelessWidget {
-  final ComplaintModel complaint;
+  final String complaintId;
 
-  const ComplaintDetailScreen({super.key, required this.complaint});
+  const ComplaintDetailScreen({super.key, required this.complaintId});
 
   @override
   Widget build(BuildContext context) {
@@ -25,202 +27,331 @@ class ComplaintDetailScreen extends StatelessWidget {
         ),
         title: const Text(
           AppStrings.appName,
-          style: TextStyle(color: AppColors.primary, fontWeight: FontWeight.bold, fontSize: 18),
+          style: TextStyle(
+              color: AppColors.primary,
+              fontWeight: FontWeight.bold,
+              fontSize: 18),
         ),
-        actions: [
-          IconButton(
-            icon: const Icon(Icons.settings_outlined, color: AppColors.primary),
-            onPressed: () {},
+      ),
+      body: StreamBuilder<DocumentSnapshot>(
+        stream: FirebaseFirestore.instance
+            .collection('complaints')
+            .doc(complaintId)
+            .snapshots(),
+        builder: (context, snapshot) {
+          if (snapshot.connectionState == ConnectionState.waiting) {
+            return const Center(child: CircularProgressIndicator());
+          }
+
+          if (snapshot.hasError) {
+            return Center(
+              child: Column(
+                mainAxisAlignment: MainAxisAlignment.center,
+                children: [
+                  Icon(Icons.error_outline,
+                      size: 64,
+                      color: AppColors.error.withValues(alpha: 0.5)),
+                  const SizedBox(height: 16),
+                  Text('Failed to load complaint',
+                      style: AppStyles.subtitle),
+                  const SizedBox(height: 8),
+                  TextButton(
+                    onPressed: () => Navigator.pop(context),
+                    child: const Text('Go Back'),
+                  ),
+                ],
+              ),
+            );
+          }
+
+          if (!snapshot.hasData || !snapshot.data!.exists) {
+            return Center(
+              child: Column(
+                mainAxisAlignment: MainAxisAlignment.center,
+                children: [
+                  Icon(Icons.search_off,
+                      size: 64,
+                      color: AppColors.textHint.withValues(alpha: 0.5)),
+                  const SizedBox(height: 16),
+                  Text('Complaint not found', style: AppStyles.subtitle),
+                  const SizedBox(height: 8),
+                  TextButton(
+                    onPressed: () => Navigator.pop(context),
+                    child: const Text('Go Back'),
+                  ),
+                ],
+              ),
+            );
+          }
+
+          final complaint = ComplaintModel.fromJson(
+            snapshot.data!.data() as Map<String, dynamic>,
+            id: snapshot.data!.id,
+          );
+
+          return Column(
+            children: [
+              Expanded(
+                child: SingleChildScrollView(
+                  child: ComplaintDetailContent(complaint: complaint),
+                ),
+              ),
+              // Chat button at bottom
+              Container(
+                padding: const EdgeInsets.all(16),
+                decoration: const BoxDecoration(
+                  color: Colors.white,
+                  boxShadow: [
+                    BoxShadow(
+                        color: Colors.black12,
+                        blurRadius: 4,
+                        offset: Offset(0, -2)),
+                  ],
+                ),
+                child: SafeArea(
+                  child: SizedBox(
+                    width: double.infinity,
+                    child: ElevatedButton.icon(
+                      onPressed: () => Navigator.push(
+                        context,
+                        MaterialPageRoute(
+                            builder: (_) =>
+                                ChatScreen(complaint: complaint)),
+                      ),
+                      icon: const Icon(Icons.forum_outlined),
+                      label: const Text('Open Discussion'),
+                      style: AppStyles.primaryButtonStyle,
+                    ),
+                  ),
+                ),
+              ),
+            ],
+          );
+        },
+      ),
+    );
+  }
+}
+
+/// Reusable complaint detail content widget — used by both user and admin screens
+class ComplaintDetailContent extends StatelessWidget {
+  final ComplaintModel complaint;
+
+  const ComplaintDetailContent({super.key, required this.complaint});
+
+  @override
+  Widget build(BuildContext context) {
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        // Top Section (Title & Info)
+        Padding(
+          padding: const EdgeInsets.all(24.0),
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Row(
+                mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                children: [
+                  Container(
+                    padding: const EdgeInsets.symmetric(
+                        horizontal: 10, vertical: 4),
+                    decoration: BoxDecoration(
+                      color: AppColors.primary,
+                      borderRadius: BorderRadius.circular(6),
+                    ),
+                    child: Text(
+                      complaint.category.toUpperCase(),
+                      style: const TextStyle(
+                          color: Colors.white,
+                          fontSize: 10,
+                          fontWeight: FontWeight.bold,
+                          letterSpacing: 0.5),
+                    ),
+                  ),
+                  Text('ID: #${complaint.refId}', style: AppStyles.refId),
+                ],
+              ),
+              const SizedBox(height: 16),
+              Text(complaint.title, style: AppStyles.heading2),
+              const SizedBox(height: 12),
+              Row(
+                children: [
+                  const Icon(Icons.calendar_today_outlined,
+                      size: 16, color: AppColors.textSecondary),
+                  const SizedBox(width: 8),
+                  Text(
+                    '${AppStrings.submittedOn}${Helpers.formatDateFull(complaint.createdAt)}',
+                    style: AppStyles.bodySmall,
+                  ),
+                ],
+              ),
+            ],
           ),
-          IconButton(
-            icon: const Icon(Icons.forum_outlined, color: AppColors.primary),
-            onPressed: () => Navigator.push(
-              context,
-              MaterialPageRoute(builder: (_) => ChatScreen(complaint: complaint)),
+        ),
+
+        // Attachments
+        if (complaint.attachments.isNotEmpty)
+          Container(
+            height: 200,
+            padding: const EdgeInsets.symmetric(horizontal: 24),
+            child: ListView.builder(
+              scrollDirection: Axis.horizontal,
+              itemCount: complaint.attachments.length,
+              itemBuilder: (context, index) {
+                return Container(
+                  width: 280,
+                  margin: const EdgeInsets.only(right: 16),
+                  decoration: BoxDecoration(
+                    borderRadius: BorderRadius.circular(16),
+                  ),
+                  clipBehavior: Clip.antiAlias,
+                  child: CachedNetworkImage(
+                    imageUrl: complaint.attachments[index],
+                    fit: BoxFit.cover,
+                    placeholder: (context, url) => Container(
+                      color: AppColors.surfaceLight,
+                      child: const Center(
+                        child: CircularProgressIndicator(strokeWidth: 2),
+                      ),
+                    ),
+                    errorWidget: (context, url, error) => Container(
+                      color: AppColors.surfaceLight,
+                      child: const Center(
+                        child: Icon(Icons.broken_image,
+                            size: 48, color: AppColors.textHint),
+                      ),
+                    ),
+                  ),
+                );
+              },
             ),
           ),
-        ],
-      ),
-      body: SingleChildScrollView(
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            // Top Section (Title & Info)
-            Padding(
-              padding: const EdgeInsets.all(24.0),
+        const SizedBox(height: 24),
+
+        // Description Card
+        Padding(
+          padding: const EdgeInsets.symmetric(horizontal: 24),
+          child: Container(
+            padding: const EdgeInsets.all(24),
+            decoration: AppStyles.cardDecoration,
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                const Text(AppStrings.fullDescription,
+                    style: AppStyles.caption),
+                const SizedBox(height: 12),
+                Text(complaint.description, style: AppStyles.body),
+              ],
+            ),
+          ),
+        ),
+        const SizedBox(height: 24),
+
+        // Status History
+        Padding(
+          padding: const EdgeInsets.symmetric(horizontal: 24),
+          child: Container(
+            padding: const EdgeInsets.all(24),
+            decoration: AppStyles.cardDecoration,
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                const Text(AppStrings.statusHistory,
+                    style: AppStyles.caption),
+                const SizedBox(height: 20),
+                StatusTimeline(history: complaint.statusHistory),
+              ],
+            ),
+          ),
+        ),
+        const SizedBox(height: 24),
+
+        // Admin Response (if exists)
+        if (complaint.adminResponse != null)
+          Padding(
+            padding:
+                const EdgeInsets.symmetric(horizontal: 24, vertical: 0),
+            child: Container(
+              padding: const EdgeInsets.all(24),
+              decoration: AppStyles.adminResponseDecoration,
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
                   Row(
-                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
                     children: [
-                      Container(
-                        padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
-                        decoration: BoxDecoration(
-                          color: AppColors.primary,
-                          borderRadius: BorderRadius.circular(6),
-                        ),
-                        child: Text(
-                          complaint.category.toUpperCase(),
-                          style: const TextStyle(color: Colors.white, fontSize: 10, fontWeight: FontWeight.bold, letterSpacing: 0.5),
+                      const Icon(Icons.headset_mic_outlined,
+                          color: Colors.white, size: 20),
+                      const SizedBox(width: 8),
+                      Text(
+                        AppStrings.officialAdminResponse,
+                        style: TextStyle(
+                          color: Colors.white.withValues(alpha: 0.8),
+                          fontSize: 11,
+                          fontWeight: FontWeight.bold,
+                          letterSpacing: 0.5,
                         ),
                       ),
-                      Text('ID: #${complaint.refId}', style: AppStyles.refId),
                     ],
                   ),
                   const SizedBox(height: 16),
-                  Text(complaint.title, style: AppStyles.heading2),
-                  const SizedBox(height: 12),
+                  Text(
+                    '"${complaint.adminResponse!.message}"',
+                    style: const TextStyle(
+                      color: AppColors.adminResponseText,
+                      fontSize: 14,
+                      fontStyle: FontStyle.italic,
+                      height: 1.5,
+                    ),
+                  ),
+                  const SizedBox(height: 20),
                   Row(
                     children: [
-                      const Icon(Icons.calendar_today_outlined, size: 16, color: AppColors.textSecondary),
-                      const SizedBox(width: 8),
-                      Text(
-                        '${AppStrings.submittedOn}${Helpers.formatDateFull(complaint.createdAt)}',
-                        style: AppStyles.bodySmall,
+                      Expanded(
+                        child: Column(
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          children: [
+                            Text(
+                              complaint.adminResponse!.respondedBy,
+                              style: const TextStyle(
+                                  color: Colors.white,
+                                  fontWeight: FontWeight.bold,
+                                  fontSize: 14),
+                            ),
+                            Text(
+                              complaint.adminResponse!.respondedByTitle,
+                              style: TextStyle(
+                                  color:
+                                      Colors.white.withValues(alpha: 0.6),
+                                  fontSize: 12),
+                            ),
+                          ],
+                        ),
+                      ),
+                      Container(
+                        padding: const EdgeInsets.symmetric(
+                            horizontal: 10, vertical: 4),
+                        decoration: BoxDecoration(
+                          color: Colors.white.withValues(alpha: 0.1),
+                          borderRadius: BorderRadius.circular(6),
+                        ),
+                        child: const Text(
+                          AppStrings.verified,
+                          style: TextStyle(
+                              color: Colors.white,
+                              fontSize: 10,
+                              fontWeight: FontWeight.bold),
+                        ),
                       ),
                     ],
                   ),
                 ],
               ),
             ),
+          ),
 
-            // Attachments
-            if (complaint.attachments.isNotEmpty)
-              Container(
-                height: 200,
-                padding: const EdgeInsets.symmetric(horizontal: 24),
-                child: ListView.builder(
-                  scrollDirection: Axis.horizontal,
-                  itemCount: complaint.attachments.length,
-                  itemBuilder: (context, index) {
-                    return Container(
-                      width: 280,
-                      margin: const EdgeInsets.only(right: 16),
-                      decoration: BoxDecoration(
-                        borderRadius: BorderRadius.circular(16),
-                        image: DecorationImage(
-                          image: NetworkImage(complaint.attachments[index]),
-                          fit: BoxFit.cover,
-                        ),
-                      ),
-                    );
-                  },
-                ),
-              ),
-            const SizedBox(height: 24),
-
-            // Description Card
-            Padding(
-              padding: const EdgeInsets.symmetric(horizontal: 24),
-              child: Container(
-                padding: const EdgeInsets.all(24),
-                decoration: AppStyles.cardDecoration,
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    const Text(AppStrings.fullDescription, style: AppStyles.caption),
-                    const SizedBox(height: 12),
-                    Text(complaint.description, style: AppStyles.body),
-                  ],
-                ),
-              ),
-            ),
-            const SizedBox(height: 24),
-
-            // Status History
-            Padding(
-              padding: const EdgeInsets.symmetric(horizontal: 24),
-              child: Container(
-                padding: const EdgeInsets.all(24),
-                decoration: AppStyles.cardDecoration,
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    const Text(AppStrings.statusHistory, style: AppStyles.caption),
-                    const SizedBox(height: 20),
-                    StatusTimeline(history: complaint.statusHistory),
-                  ],
-                ),
-              ),
-            ),
-            const SizedBox(height: 24),
-
-            // Admin Response (if resolved)
-            if (complaint.adminResponse != null)
-              Padding(
-                padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 0),
-                child: Container(
-                  padding: const EdgeInsets.all(24),
-                  decoration: AppStyles.adminResponseDecoration,
-                  child: Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
-                      Row(
-                        children: [
-                          const Icon(Icons.headset_mic_outlined, color: Colors.white, size: 20),
-                          const SizedBox(width: 8),
-                          Text(
-                            AppStrings.officialAdminResponse,
-                            style: TextStyle(
-                              color: Colors.white.withValues(alpha: 0.8),
-                              fontSize: 11,
-                              fontWeight: FontWeight.bold,
-                              letterSpacing: 0.5,
-                            ),
-                          ),
-                        ],
-                      ),
-                      const SizedBox(height: 16),
-                      Text(
-                        '"${complaint.adminResponse!.message}"',
-                        style: const TextStyle(
-                          color: AppColors.adminResponseText,
-                          fontSize: 14,
-                          fontStyle: FontStyle.italic,
-                          height: 1.5,
-                        ),
-                      ),
-                      const SizedBox(height: 20),
-                      Row(
-                        children: [
-                          Expanded(
-                            child: Column(
-                              crossAxisAlignment: CrossAxisAlignment.start,
-                              children: [
-                                Text(
-                                  complaint.adminResponse!.respondedBy,
-                                  style: const TextStyle(color: Colors.white, fontWeight: FontWeight.bold, fontSize: 14),
-                                ),
-                                Text(
-                                  complaint.adminResponse!.respondedByTitle,
-                                  style: TextStyle(color: Colors.white.withValues(alpha: 0.6), fontSize: 12),
-                                ),
-                              ],
-                            ),
-                          ),
-                          Container(
-                            padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
-                            decoration: BoxDecoration(
-                              color: Colors.white.withValues(alpha: 0.1),
-                              borderRadius: BorderRadius.circular(6),
-                            ),
-                            child: const Text(
-                              AppStrings.verified,
-                              style: TextStyle(color: Colors.white, fontSize: 10, fontWeight: FontWeight.bold),
-                            ),
-                          ),
-                        ],
-                      ),
-                    ],
-                  ),
-                ),
-              ),
-            
-            const SizedBox(height: 48),
-          ],
-        ),
-      ),
+        const SizedBox(height: 48),
+      ],
     );
   }
 }

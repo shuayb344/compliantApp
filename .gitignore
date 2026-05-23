@@ -59,3 +59,4 @@ Temporary Items
 google-services.json
 Google-Service-Info.plist
 firebase_options.dart
+*.log

@@ -42,7 +42,7 @@ class _RegisterScreenState extends State<RegisterScreen> {
     
     try {
       final authProvider = Provider.of<AuthProvider>(context, listen: false);
-      final error = await authProvider.register(
+      final success = await authProvider.register(
         _nameController.text.trim(),
         _emailController.text.trim(),
         _passwordController.text,
@@ -51,15 +51,14 @@ class _RegisterScreenState extends State<RegisterScreen> {
 
       if (mounted) {
         setState(() => _isLoading = false);
-        if (error != null) {
-          ScaffoldMessenger.of(context).showSnackBar(
-            SnackBar(content: Text(error), backgroundColor: AppColors.error),
-          );
+        if (success) {
+          Navigator.pushReplacementNamed(context, AppRoutes.authWrapper);
         } else {
           ScaffoldMessenger.of(context).showSnackBar(
-            const SnackBar(content: Text('Account created successfully!'), backgroundColor: AppColors.success),
+            SnackBar(
+                content: Text(authProvider.error ?? 'Registration failed'),
+                backgroundColor: AppColors.error),
           );
-          // Redirection is usually handled by AuthWrapper or the caller
         }
       }
     } catch (e) {

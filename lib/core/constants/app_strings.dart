@@ -60,6 +60,11 @@ class AppStrings {
   static const String description = 'Description';
   static const String descriptionPlaceholder =
       'Tell us what happened in detail...';
+  static const String descriptionHint = descriptionPlaceholder;
+  static const String attachImages = 'Attach Images';
+  static const String tellUsWhatHappened = 'Tell us what happened';
+  static const String submitDetailSubtitle = submitComplaintSubtitle;
+  static const String submitNewComplaint = 'Submit New Complaint';
   static const String supportingDocuments = 'Supporting Documents (Optional)';
   static const String maxFiles = 'Maximum 3 files. JPG or PNG only.';
   static const String add = 'Add';

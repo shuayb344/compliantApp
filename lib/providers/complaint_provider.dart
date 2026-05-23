@@ -42,7 +42,7 @@ class ComplaintProvider extends ChangeNotifier {
   int get resolvedCount =>
       _complaints.where((c) => c.status == 'resolved').length;
 
-  void fetchComplaints({String? userId}) {
+  Future<void> fetchComplaints({String? userId}) async {
     _isLoading = true;
     _error = null;
     notifyListeners();

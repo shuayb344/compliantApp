@@ -1,3 +1,4 @@
+import 'package:flutter/foundation.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:google_sign_in/google_sign_in.dart';
@@ -36,17 +37,16 @@ class AuthService {
   }
 
   // Register with email and password
-  Future<UserModel> register(String name, String email, String password, String role) async {
+  Future<UserModel?> register(String name, String email, String password, String role) async {
     try {
-      final UserCredential credential = await _auth.createUserWithEmailAndPassword(
+      debugPrint('AUTH_SERVICE: Attempting register for $email');
+      UserCredential credential = await _auth.createUserWithEmailAndPassword(
         email: email,
         password: password,
       );
-
-      if (credential.user == null) {
-        throw Exception('Failed to create user');
-      }
-
+      
+      debugPrint('AUTH_SERVICE: Firebase Auth success: ${credential.user?.uid}');
+      
       final UserModel newUser = UserModel(
         uid: credential.user!.uid,
         name: name,
@@ -59,11 +59,13 @@ class AuthService {
 
       // Save user profile to Firestore
       await _db.collection('users').doc(newUser.uid).set(newUser.toJson());
-
+      debugPrint('AUTH_SERVICE: Firestore profile created');
       return newUser;
     } on FirebaseAuthException catch (e) {
-      throw _handleAuthError(e);
+      debugPrint('AUTH_SERVICE: FirebaseAuthException: [${e.code}] ${e.message}');
+      throw Exception('${e.message} (Code: ${e.code})');
     } catch (e) {
+      debugPrint('AUTH_SERVICE: Unknown Error: $e');
       throw Exception('An unexpected error occurred: $e');
     }
   }
@@ -131,6 +133,31 @@ class AuthService {
     } catch (e) {
       log('Error fetching user data: $e');
       return null;
+    }
+  }
+
+  // Update user profile in Firestore
+  Future<UserModel?> updateProfile(String uid, {String? name}) async {
+    try {
+      final updates = <String, dynamic>{
+        'updatedAt': DateTime.now(),
+      };
+      if (name != null && name.isNotEmpty) {
+        updates['name'] = name;
+      }
+
+      await _db.collection('users').doc(uid).update(updates);
+
+      // Also update Firebase Auth display name
+      final currentUser = _auth.currentUser;
+      if (currentUser != null && name != null) {
+        await currentUser.updateDisplayName(name);
+      }
+
+      return await getUserData(uid);
+    } catch (e) {
+      log('Error updating profile: $e');
+      throw Exception('Failed to update profile: $e');
     }
   }
 

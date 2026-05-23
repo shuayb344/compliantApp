@@ -78,15 +78,7 @@ class _LoginScreenState extends State<LoginScreen> {
       backgroundColor: AppColors.background,
       body: Stack(
         children: [
-          // Background Shield Watermark (Optional decoration)
-          Positioned(
-            right: -50,
-            bottom: -50,
-            child: Opacity(
-              opacity: 0.05,
-              child: Icon(Icons.shield, size: 300, color: AppColors.primary),
-            ),
-          ),
+
           
           SafeArea(
             child: SingleChildScrollView(

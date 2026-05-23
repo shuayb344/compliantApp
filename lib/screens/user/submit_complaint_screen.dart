@@ -58,6 +58,7 @@ class _SubmitComplaintScreenState extends State<SubmitComplaintScreen> {
         category: _selectedCategory,
         status: 'pending',
         createdAt: DateTime.now(),
+        updatedAt: DateTime.now(),
         attachments: [], // URLs added by service
         statusHistory: [
           StatusHistoryEntry(

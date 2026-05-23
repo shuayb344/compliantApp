@@ -77,15 +77,17 @@ class _NotificationScreenState extends State<NotificationScreen> {
                     child: Row(
                       mainAxisAlignment: MainAxisAlignment.spaceBetween,
                       children: [
-                        Column(
-                          crossAxisAlignment: CrossAxisAlignment.start,
-                          children: [
-                            Text(AppStrings.recentAlerts,
-                                style: AppStyles.heading2),
-                            const SizedBox(height: 4),
-                            Text(AppStrings.alertsSubtitle,
-                                style: AppStyles.bodySmall),
-                          ],
+                        Expanded(
+                          child: Column(
+                            crossAxisAlignment: CrossAxisAlignment.start,
+                            children: [
+                              Text(AppStrings.recentAlerts,
+                                  style: AppStyles.heading2),
+                              const SizedBox(height: 4),
+                              Text(AppStrings.alertsSubtitle,
+                                  style: AppStyles.bodySmall),
+                            ],
+                          ),
                         ),
                         if (provider.unreadCount > 0)
                           TextButton(

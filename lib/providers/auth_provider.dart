@@ -6,14 +6,30 @@ class AuthProvider extends ChangeNotifier {
   final AuthService _authService = AuthService();
   
   UserModel? _user;
-  bool _isLoading = false;
+  bool _isLoading = true; // Start with loading to check initial session
   String? _error;
+
+  AuthProvider() {
+    _init();
+  }
 
   UserModel? get user => _user;
   bool get isLoading => _isLoading;
   String? get error => _error;
   bool get isAuthenticated => _user != null;
   bool get isAdmin => _user?.role == 'admin';
+
+  void _init() {
+    _authService.userChanges.listen((firebaseUser) async {
+      if (firebaseUser != null) {
+        _user = await _authService.getUserData(firebaseUser.uid);
+      } else {
+        _user = null;
+      }
+      _isLoading = false;
+      notifyListeners();
+    });
+  }
 
   Future<bool> login(String email, String password) async {
     _setLoading(true);
@@ -23,7 +39,7 @@ class AuthProvider extends ChangeNotifier {
       _setLoading(false);
       return true;
     } catch (e) {
-      _error = e.toString();
+      _error = e.toString().replaceFirst('Exception: ', '');
       _setLoading(false);
       return false;
     }
@@ -37,7 +53,7 @@ class AuthProvider extends ChangeNotifier {
       _setLoading(false);
       return true;
     } catch (e) {
-      _error = e.toString();
+      _error = e.toString().replaceFirst('Exception: ', '');
       _setLoading(false);
       return false;
     }
@@ -51,7 +67,7 @@ class AuthProvider extends ChangeNotifier {
       _setLoading(false);
       return _user != null;
     } catch (e) {
-      _error = e.toString();
+      _error = e.toString().replaceFirst('Exception: ', '');
       _setLoading(false);
       return false;
     }

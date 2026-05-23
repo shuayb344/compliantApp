@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:flutter/foundation.dart';
 import 'package:provider/provider.dart';
 import 'package:firebase_core/firebase_core.dart';
 import 'firebase_options.dart';
@@ -17,9 +18,11 @@ void main() async {
     options: DefaultFirebaseOptions.currentPlatform,
   );
   
-  // Initialize Notifications
-  await NotificationService.instance.initialize();
-  FirebaseMessaging.onBackgroundMessage(firebaseMessagingBackgroundHandler);
+  // Initialize Notifications for mobile only
+  if (defaultTargetPlatform == TargetPlatform.android || defaultTargetPlatform == TargetPlatform.iOS) {
+    await NotificationService.instance.initialize();
+    FirebaseMessaging.onBackgroundMessage(firebaseMessagingBackgroundHandler);
+  }
 
   runApp(const ComplaintApp());
 }
@@ -55,7 +58,7 @@ class ComplaintApp extends StatelessWidget {
           ),
           useMaterial3: true,
         ),
-        initialRoute: AppRoutes.login,
+        initialRoute: AppRoutes.authWrapper,
         onGenerateRoute: AppRoutes.onGenerateRoute,
       ),
     );

@@ -6,122 +6,76 @@ import '../models/message_model.dart';
 import '../core/utils/helpers.dart';
 
 class ComplaintService {
-  // Mock data for initial development
-  final List<ComplaintModel> _mockComplaints = [
-    ComplaintModel(
-      id: '1',
-      refId: 'REF-8422',
-      userId: 'user_123',
-      userName: 'Alex Thompson',
-      title: 'Unable to process monthly subscription payment',
-      description: 'The portal keeps returning an error every time I try to update my card details. I have tried three different cards from different banks, but the result is the same. Please assist as my subscription is about to expire.',
-      category: 'Billing',
-      status: 'pending',
-      createdAt: DateTime.now().subtract(const Duration(days: 2)),
-      updatedAt: DateTime.now().subtract(const Duration(days: 2)),
-      statusHistory: [
-        StatusHistoryEntry(
-          status: 'pending',
-          timestamp: DateTime.now().subtract(const Duration(days: 2)),
-          note: 'Complaint received and awaiting initial review.',
-        ),
-      ],
-    ),
-    ComplaintModel(
-      id: '2',
-      refId: 'REF-9012',
-      userId: 'user_456',
-      userName: 'Sarah Jenkins',
-      title: 'Dashboard analytics not refreshing in real-time',
-      description: 'The analytics charts on the mobile dashboard are not refreshing even when I pull to refresh. I have to restart the app every time to see the latest data. This is impacting my ability to monitor performance.',
-      category: 'Technical',
-      status: 'in_progress',
-      createdAt: DateTime.now().subtract(const Duration(days: 5)),
-      updatedAt: DateTime.now().subtract(const Duration(days: 3)),
-      statusHistory: [
-        StatusHistoryEntry(
-          status: 'pending',
-          timestamp: DateTime.now().subtract(const Duration(days: 5)),
-          note: 'Complaint received and awaiting initial review.',
-        ),
-        StatusHistoryEntry(
-          status: 'in_progress',
-          timestamp: DateTime.now().subtract(const Duration(days: 3)),
-          note: 'Task assigned to the Technical Support Team.',
-        ),
-      ],
-    ),
-    ComplaintModel(
-      id: '3',
-      refId: 'REF-8802',
-      userId: 'user_123',
-      userName: 'Alex Thompson',
-      title: 'Unfinished Road Maintenance on Oak Avenue',
-      description: 'The maintenance work on Oak Avenue between 4th and 6th Street was abruptly halted three days ago. Currently, there are several large potholes left unfilled and hazardous loose gravel across the primary lane. This is causing significant traffic congestion during peak hours and poses a risk to cyclists and vehicles. We request an immediate update on the timeline for completion.',
-      category: 'Infrastructure',
-      status: 'resolved',
-      createdAt: DateTime.now().subtract(const Duration(days: 10)),
-      updatedAt: DateTime.now().subtract(const Duration(hours: 10)),
-      statusHistory: [
-        StatusHistoryEntry(
-          status: 'pending',
-          timestamp: DateTime.now().subtract(const Duration(days: 10, hours: 2)),
-          note: 'Complaint received and awaiting initial review.',
-        ),
-        StatusHistoryEntry(
-          status: 'in_progress',
-          timestamp: DateTime.now().subtract(const Duration(days: 8, hours: 5)),
-          note: 'Task assigned to the Public Works Department.',
-        ),
-        StatusHistoryEntry(
-          status: 'resolved',
-          timestamp: DateTime.now().subtract(const Duration(hours: 10, minutes: 15)),
-          note: 'The maintenance crew has completed the resurfacing work.',
-        ),
-      ],
-      adminResponse: AdminResponse(
-        message: 'We apologize for the delay. The delay was due to an unforeseen utility line issue that required coordination with the water department. The resurfacing is now completed, and the road is fully open. Thank you for your patience.',
-        respondedBy: 'James T. Carter',
-        respondedByTitle: 'Public Works Supervisor',
-        respondedAt: DateTime.now().subtract(const Duration(hours: 10, minutes: 15)),
-        verified: true,
-      ),
-    ),
-  ];
+  final FirebaseFirestore _db = FirebaseFirestore.instance;
+  final FirebaseStorage _storage = FirebaseStorage.instance;
+  final String _collection = 'complaints';
 
+  // Get real-time stream of complaints
   Stream<List<ComplaintModel>> getComplaints({String? userId}) {
-    // Simulate Firestore stream
-    return Stream.value(
-      userId == null
-          ? _mockComplaints
-          : _mockComplaints.where((c) => c.userId == userId).toList(),
-    ).map((list) => list..sort((a, b) => b.createdAt.compareTo(a.createdAt)));
-  }
+    Query query = _db.collection(_collection).orderBy('createdAt', descending: true);
 
-  Future<void> submitComplaint(ComplaintModel complaint, {List<File>? images}) async {
-    List<String> imageUrls = [];
-    
-    if (images != null && images.isNotEmpty) {
-      for (var image in images) {
-        String? url = await uploadImage(image);
-        if (url != null) imageUrls.add(url);
-      }
+    if (userId != null) {
+      query = query.where('userId', isEqualTo: userId);
     }
 
-    final updatedComplaint = complaint.copyWith(attachments: imageUrls);
-    
-    // Simulate upload delay
-    await Future.delayed(const Duration(seconds: 1));
-    _mockComplaints.add(updatedComplaint);
+    return query.snapshots().map((snapshot) {
+      return snapshot.docs.map((doc) {
+        return ComplaintModel.fromJson(doc.data() as Map<String, dynamic>, id: doc.id);
+      }).toList();
+    });
   }
 
-  Future<String?> uploadImage(File file) async {
+  // Submit a new complaint
+  Future<void> submitComplaint(ComplaintModel complaint, {List<File>? images}) async {
     try {
-      final fileName = '${DateTime.now().millisecondsSinceEpoch}_${file.path.split('/').last}';
-      final ref = FirebaseStorage.instance.ref().child('complaints').child(fileName);
+      // Create a unique document ID first
+      final docRef = _db.collection(_collection).doc();
+      final String complaintId = docRef.id;
+
+      List<String> imageUrls = [];
       
-      final uploadTask = await ref.putFile(file);
-      final downloadUrl = await uploadTask.ref.getDownloadURL();
+      if (images != null && images.isNotEmpty) {
+        for (var i = 0; i < images.length; i++) {
+          String? url = await uploadImage(images[i], complaintId, i);
+          if (url != null) imageUrls.add(url);
+        }
+      }
+
+      // Generate a short Ref ID if not provided
+      final String refId = 'REF-${DateTime.now().millisecondsSinceEpoch.toString().substring(7)}';
+
+      final newComplaint = complaint.copyWith(
+        id: complaintId,
+        refId: refId,
+        attachments: imageUrls,
+        createdAt: DateTime.now(),
+        updatedAt: DateTime.now(),
+        statusHistory: [
+          StatusHistoryEntry(
+            status: 'pending',
+            timestamp: DateTime.now(),
+            note: 'Complaint submitted successfully.',
+          ),
+        ],
+      );
+
+      await docRef.set(newComplaint.toJson());
+      
+      // Create notification for admin (Optional logic could go here)
+    } catch (e) {
+      log('Error submitting complaint: $e');
+      rethrow;
+    }
+  }
+
+  // Upload image to Storage
+  Future<String?> uploadImage(File file, String complaintId, int index) async {
+    try {
+      final String fileName = 'image_$index.jpg';
+      final ref = _storage.ref().child('complaints').child(complaintId).child(fileName);
+      
+      await ref.putFile(file);
+      final downloadUrl = await ref.getDownloadURL();
       
       return downloadUrl;
     } catch (e) {
@@ -130,16 +84,16 @@ class ComplaintService {
     }
   }
 
-  // Add dummy log import if needed or use dart:developer
-  void log(String message) {
-    print(message);
-  }
-
+  // Update complaint status
   Future<void> updateComplaintStatus(String id, String status, String note) async {
-    await Future.delayed(const Duration(milliseconds: 500));
-    int index = _mockComplaints.indexWhere((c) => c.id == id);
-    if (index != -1) {
-      final complaint = _mockComplaints[index];
+    try {
+      final docRef = _db.collection(_collection).doc(id);
+      final doc = await docRef.get();
+      
+      if (!doc.exists) return;
+
+      final complaint = ComplaintModel.fromJson(doc.data() as Map<String, dynamic>, id: doc.id);
+      
       final newHistory = List<StatusHistoryEntry>.from(complaint.statusHistory)
         ..add(StatusHistoryEntry(
           status: status,
@@ -147,44 +101,95 @@ class ComplaintService {
           note: note,
         ));
       
-      _mockComplaints[index] = complaint.copyWith(
-        status: status,
-        statusHistory: newHistory,
-        updatedAt: DateTime.now(),
+      await docRef.update({
+        'status': status,
+        'statusHistory': newHistory.map((e) => e.toJson()).toList(),
+        'updatedAt': FieldValue.serverTimestamp(),
+      });
+
+      // Trigger notification logic would go here
+      await _createNotification(
+        complaint.userId,
+        'Complaint Updated',
+        'Your complaint (${complaint.refId}) status has been changed to ${status.replaceAll('_', ' ')}.',
+        id,
+        status == 'resolved' ? 'resolved' : 'status_update',
       );
+    } catch (e) {
+      log('Error updating status: $e');
+      rethrow;
     }
   }
 
+  // Add admin response
   Future<void> addAdminResponse(String id, AdminResponse response) async {
-    await Future.delayed(const Duration(milliseconds: 500));
-    int index = _mockComplaints.indexWhere((c) => c.id == id);
-    if (index != -1) {
-      _mockComplaints[index] = _mockComplaints[index].copyWith(
-        adminResponse: response,
-        updatedAt: DateTime.now(),
-      );
+    try {
+      await _db.collection(_collection).doc(id).update({
+        'adminResponse': response.toJson(),
+        'updatedAt': FieldValue.serverTimestamp(),
+      });
+    } catch (e) {
+      log('Error adding admin response: $e');
+      rethrow;
     }
   }
 
-  // ── Chat Logic ──────────────────────────────────────────────────
+  // Delete complaint
+  Future<void> deleteComplaint(String id) async {
+    try {
+      await _db.collection(_collection).doc(id).delete();
+      // Also delete images from storage
+      final storageRef = _storage.ref().child('complaints').child(id);
+      final listResult = await storageRef.listAll();
+      for (var item in listResult.items) {
+        await item.delete();
+      }
+    } catch (e) {
+      log('Error deleting complaint: $e');
+      rethrow;
+    }
+  }
+
+  // Create notification in Firestore
+  Future<void> _createNotification(String userId, String title, String body, String complaintId, String type) async {
+    try {
+      await _db.collection('notifications').add({
+        'userId': userId,
+        'title': title,
+        'message': body, // Note: model uses 'message', service used 'body'
+        'type': type,
+        'complaintId': complaintId,
+        'isRead': false,
+        'createdAt': FieldValue.serverTimestamp(),
+      });
+    } catch (e) {
+      log('Error creating notification: $e');
+    }
+  }
+
+  // ── Chat Logic (Existing but fixed) ────────────────────────────────
 
   Stream<List<MessageModel>> getMessages(String complaintId) {
-    return FirebaseFirestore.instance
-        .collection('complaints')
+    return _db
+        .collection(_collection)
         .doc(complaintId)
         .collection('messages')
         .orderBy('timestamp', descending: false)
         .snapshots()
         .map((snapshot) {
-      return snapshot.docs.map((doc) => MessageModel.fromJson(doc.data(), id: doc.id)).toList();
+      return snapshot.docs.map((doc) => MessageModel.fromJson(doc.data() as Map<String, dynamic>, id: doc.id)).toList();
     });
   }
 
   Future<void> sendMessage(String complaintId, MessageModel message) async {
-    await FirebaseFirestore.instance
-        .collection('complaints')
+    await _db
+        .collection(_collection)
         .doc(complaintId)
         .collection('messages')
         .add(message.toJson());
+  }
+
+  void log(String message) {
+    print('ComplaintService: $message');
   }
 }

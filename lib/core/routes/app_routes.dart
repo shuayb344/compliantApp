@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import '../../screens/auth/auth_wrapper.dart';
 import '../../screens/auth/login_screen.dart';
 import '../../screens/auth/register_screen.dart';
 import '../../screens/user/user_home_screen.dart';
@@ -11,11 +12,11 @@ import '../../screens/admin/admin_complaint_detail_screen.dart';
 import '../../screens/admin/admin_notification_screen.dart';
 import '../../screens/admin/admin_analytics_screen.dart';
 import '../../screens/user/complaints_history_screen.dart';
-import '../../models/complaint_model.dart';
 
 class AppRoutes {
   AppRoutes._();
 
+  static const String authWrapper = '/';
   static const String login = '/login';
   static const String register = '/register';
   static const String userHome = '/user/home';
@@ -31,6 +32,8 @@ class AppRoutes {
 
   static Route<dynamic> onGenerateRoute(RouteSettings settings) {
     switch (settings.name) {
+      case authWrapper:
+        return _buildRoute(const AuthWrapper(), settings);
       case login:
         return _buildRoute(const LoginScreen(), settings);
       case register:
@@ -40,9 +43,9 @@ class AppRoutes {
       case submitComplaint:
         return _buildRoute(const SubmitComplaintScreen(), settings);
       case complaintDetail:
-        final complaint = settings.arguments as ComplaintModel;
+        final complaintId = settings.arguments as String;
         return _buildRoute(
-          ComplaintDetailScreen(complaint: complaint),
+          ComplaintDetailScreen(complaintId: complaintId),
           settings,
         );
       case userNotifications:
@@ -52,9 +55,9 @@ class AppRoutes {
       case adminDashboard:
         return _buildRoute(const AdminDashboardScreen(), settings);
       case adminComplaintDetail:
-        final complaint = settings.arguments as ComplaintModel;
+        final complaintId = settings.arguments as String;
         return _buildRoute(
-          AdminComplaintDetailScreen(complaint: complaint),
+          AdminComplaintDetailScreen(complaintId: complaintId),
           settings,
         );
       case adminNotifications:
@@ -64,7 +67,7 @@ class AppRoutes {
       case userComplaints:
         return _buildRoute(const ComplaintsHistoryScreen(), settings);
       default:
-        return _buildRoute(const LoginScreen(), settings);
+        return _buildRoute(const AuthWrapper(), settings);
     }
   }
 

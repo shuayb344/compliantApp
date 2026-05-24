@@ -195,11 +195,11 @@ class _LoginScreenState extends State<LoginScreen> {
                 ),
                 const SizedBox(height: 32),
 
-                // SSO Button
+                // Google Sign In Button
                 CustomButton(
-                  text: AppStrings.continueWithSSO,
+                  text: AppStrings.continueWithGoogle,
                   isOutlined: true,
-                  icon: Icons.shield_outlined,
+                  assetIcon: 'assets/icons/google_logo.png',
                   onPressed: _handleGoogleSignIn,
                 ),
                 const SizedBox(height: 24),

@@ -7,6 +7,7 @@ class CustomButton extends StatelessWidget {
   final bool isLoading;
   final bool isOutlined;
   final IconData? icon;
+  final String? assetIcon;
 
   const CustomButton({
     super.key,
@@ -15,6 +16,7 @@ class CustomButton extends StatelessWidget {
     this.isLoading = false,
     this.isOutlined = false,
     this.icon,
+    this.assetIcon,
   });
 
   @override
@@ -53,13 +55,19 @@ class CustomButton extends StatelessWidget {
       );
     }
 
-    if (icon != null) {
+    if (icon != null || assetIcon != null) {
       return Row(
         mainAxisAlignment: MainAxisAlignment.center,
         children: [
+          if (assetIcon != null) ...[
+            Image.asset(assetIcon!, width: 22, height: 22),
+            const SizedBox(width: 10),
+          ],
           Text(text),
-          const SizedBox(width: 8),
-          Icon(icon, size: 20),
+          if (icon != null) ...[
+            const SizedBox(width: 8),
+            Icon(icon, size: 20),
+          ],
         ],
       );
     }

@@ -13,7 +13,7 @@ class AppStrings {
   static const String confirmPassword = 'Confirm Password';
   static const String fullName = 'Full Name';
   static const String forgotPassword = 'Forgot?';
-  static const String continueWithSSO = 'Continue with SSO';
+  static const String continueWithGoogle = 'Continue with Google';
   static const String dontHaveAccount = "Don't have an account? ";
   static const String alreadyHaveAccount = 'Already have an account? ';
   static const String emailPlaceholder = 'name@company.com';

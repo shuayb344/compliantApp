@@ -1,13 +1,15 @@
 import 'dart:io';
-import 'package:firebase_storage/firebase_storage.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
+import 'package:cloudinary_public/cloudinary_public.dart';
 import '../models/complaint_model.dart';
 import '../models/message_model.dart';
-import '../core/utils/helpers.dart';
 
 class ComplaintService {
   final FirebaseFirestore _db = FirebaseFirestore.instance;
-  final FirebaseStorage _storage = FirebaseStorage.instance;
+  
+  // Cloudinary configuration
+  final _cloudinary = CloudinaryPublic('shuayb', 'complaints_app', cache: false);
+  
   final String _collection = 'complaints';
 
   // Get real-time stream of complaints
@@ -28,7 +30,6 @@ class ComplaintService {
   // Submit a new complaint
   Future<void> submitComplaint(ComplaintModel complaint, {List<File>? images}) async {
     try {
-      // Create a unique document ID first
       final docRef = _db.collection(_collection).doc();
       final String complaintId = docRef.id;
 
@@ -36,13 +37,15 @@ class ComplaintService {
       
       if (images != null && images.isNotEmpty) {
         for (var i = 0; i < images.length; i++) {
-          String? url = await uploadImage(images[i], complaintId, i);
+          String? url = await uploadImage(images[i]);
           if (url != null) imageUrls.add(url);
         }
       }
 
       // Generate a short Ref ID if not provided
-      final String refId = 'REF-${DateTime.now().millisecondsSinceEpoch.toString().substring(7)}';
+      final String refId = complaint.refId.isEmpty 
+          ? 'REF-${DateTime.now().millisecondsSinceEpoch.toString().substring(7)}'
+          : complaint.refId;
 
       final newComplaint = complaint.copyWith(
         id: complaintId,
@@ -60,26 +63,26 @@ class ComplaintService {
       );
 
       await docRef.set(newComplaint.toJson());
-      
-      // Create notification for admin (Optional logic could go here)
     } catch (e) {
       log('Error submitting complaint: $e');
       rethrow;
     }
   }
 
-  // Upload image to Storage
-  Future<String?> uploadImage(File file, String complaintId, int index) async {
+  // Upload image to Cloudinary
+  Future<String?> uploadImage(File file) async {
     try {
-      final String fileName = 'image_$index.jpg';
-      final ref = _storage.ref().child('complaints').child(complaintId).child(fileName);
+      CloudinaryResponse response = await _cloudinary.uploadFile(
+        CloudinaryFile.fromFile(
+          file.path,
+          folder: 'complaints',
+          resourceType: CloudinaryResourceType.Image,
+        ),
+      );
       
-      await ref.putFile(file);
-      final downloadUrl = await ref.getDownloadURL();
-      
-      return downloadUrl;
+      return response.secureUrl;
     } catch (e) {
-      log('Error uploading image: $e');
+      log('Error uploading to Cloudinary: $e');
       return null;
     }
   }
@@ -107,7 +110,6 @@ class ComplaintService {
         'updatedAt': FieldValue.serverTimestamp(),
       });
 
-      // Trigger notification logic would go here
       await _createNotification(
         complaint.userId,
         'Complaint Updated',
@@ -138,12 +140,8 @@ class ComplaintService {
   Future<void> deleteComplaint(String id) async {
     try {
       await _db.collection(_collection).doc(id).delete();
-      // Also delete images from storage
-      final storageRef = _storage.ref().child('complaints').child(id);
-      final listResult = await storageRef.listAll();
-      for (var item in listResult.items) {
-        await item.delete();
-      }
+      // Note: Cloudinary deletion requires API Secret, which is not safe to store on client.
+      // Usually images are left or managed via a backend.
     } catch (e) {
       log('Error deleting complaint: $e');
       rethrow;
@@ -156,7 +154,7 @@ class ComplaintService {
       await _db.collection('notifications').add({
         'userId': userId,
         'title': title,
-        'message': body, // Note: model uses 'message', service used 'body'
+        'message': body,
         'type': type,
         'complaintId': complaintId,
         'isRead': false,
@@ -166,8 +164,6 @@ class ComplaintService {
       log('Error creating notification: $e');
     }
   }
-
-  // ── Chat Logic (Existing but fixed) ────────────────────────────────
 
   Stream<List<MessageModel>> getMessages(String complaintId) {
     return _db

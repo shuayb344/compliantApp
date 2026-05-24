@@ -12,3 +12,11 @@ GeneratedPluginRegistrant.java
 key.properties
 **/*.keystore
 **/*.jks
+
+# Logs
+*.log
+
+# IDE files
+*.iml
+.idea/
+.kotlin/

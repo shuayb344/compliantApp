@@ -63,3 +63,26 @@ firebase_options.dart
 
 # APK files
 *.apk
+
+# IntelliJ/VS Code
+*.iml
+*.ipr
+*.iws
+.idea/
+.vscode/
+.history/
+
+# Environment variables
+.env
+*.env
+.env.*
+
+# Generated docs
+doc/api/
+
+# Misc
+.null-safety
+.project
+.settings/
+*.pubxml
+node_modules/

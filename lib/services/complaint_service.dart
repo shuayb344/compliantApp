@@ -83,7 +83,7 @@ class ComplaintService {
   // Upload image to Cloudinary
   Future<String> uploadImage(File file) async {
     try {
-      log('Cloudinary config - cloud: shuayb, preset: complaints_app');
+      log('Cloudinary config - cloud: degstpmjo, preset: complaints_app');
       CloudinaryResponse response = await _cloudinary.uploadFile(
         CloudinaryFile.fromFile(
           file.path,

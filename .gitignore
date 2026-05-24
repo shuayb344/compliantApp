@@ -17,6 +17,7 @@ native-libs/
 gen/
 *.keystore
 *.jks
+key.properties
 *.p12
 *.pem
 *.der

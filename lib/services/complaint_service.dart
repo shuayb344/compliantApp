@@ -8,7 +8,7 @@ class ComplaintService {
   final FirebaseFirestore _db = FirebaseFirestore.instance;
   
   // Cloudinary configuration
-  final _cloudinary = CloudinaryPublic('shuayb', 'complaints_app', cache: false);
+  final _cloudinary = CloudinaryPublic('degstpmjo', 'complaints_app', cache: false);
   
   final String _collection = 'complaints';
 
@@ -36,10 +36,20 @@ class ComplaintService {
       List<String> imageUrls = [];
       
       if (images != null && images.isNotEmpty) {
+        log('Uploading ${images.length} image(s) to Cloudinary...');
         for (var i = 0; i < images.length; i++) {
-          String? url = await uploadImage(images[i]);
-          if (url != null) imageUrls.add(url);
+          final file = images[i];
+          log('Uploading image ${i + 1}: ${file.path} (exists: ${file.existsSync()}, size: ${file.existsSync() ? file.lengthSync() : 0} bytes)');
+          try {
+            String url = await uploadImage(file);
+            imageUrls.add(url);
+            log('Upload ${i + 1} successful: $url');
+          } catch (e) {
+            log('Upload ${i + 1} failed: $e');
+            // Continue with other images even if one fails
+          }
         }
+        log('Total successful uploads: ${imageUrls.length}/${images.length}');
       }
 
       // Generate a short Ref ID if not provided
@@ -62,6 +72,7 @@ class ComplaintService {
         ],
       );
 
+      log('Saving complaint with ${imageUrls.length} attachment URL(s)');
       await docRef.set(newComplaint.toJson());
     } catch (e) {
       log('Error submitting complaint: $e');
@@ -70,8 +81,9 @@ class ComplaintService {
   }
 
   // Upload image to Cloudinary
-  Future<String?> uploadImage(File file) async {
+  Future<String> uploadImage(File file) async {
     try {
+      log('Cloudinary config - cloud: shuayb, preset: complaints_app');
       CloudinaryResponse response = await _cloudinary.uploadFile(
         CloudinaryFile.fromFile(
           file.path,
@@ -80,10 +92,11 @@ class ComplaintService {
         ),
       );
       
+      log('Cloudinary response URL: ${response.secureUrl}');
       return response.secureUrl;
     } catch (e) {
       log('Error uploading to Cloudinary: $e');
-      return null;
+      rethrow;
     }
   }
 

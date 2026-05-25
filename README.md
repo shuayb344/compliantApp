@@ -8,6 +8,11 @@ A mobile application built with **Flutter & Firebase** that gives the general pu
 [Download Full Project Documentation](Complaint_Feedback_system_documentation.docx)
 
 ---
+## 📲 Download App
+
+[⬇️ Download APK (Android)](complaint-app-final-release.apk)
+
+---
 ## 📱 Screenshots
 
 ### 🔐 Login Screen

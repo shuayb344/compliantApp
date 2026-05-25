@@ -3,7 +3,11 @@
 A mobile application built with **Flutter & Firebase** that gives the general public a structured, transparent, and accountable channel to submit complaints, track their status in real time, and receive notifications on resolution — replacing informal and ineffective reporting methods.
 
 ---
+## 📄 Documentation
 
+[Download Full Project Documentation](Complaint_Feedback_System_Documentation.docx)
+
+---
 ## 📱 Screenshots
 
 ### 🔐 Login Screen
